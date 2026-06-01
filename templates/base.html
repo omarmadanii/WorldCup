@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>{% block title %}كأس العالم 2026{% endblock %} — توقعات الأصدقاء</title>
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Arabic + display fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet" />
+
+<!-- Design-system colour palette & font aliases -->
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        pitch: { 950:'#062a17', 900:'#073a1f', 800:'#0a4d29', 700:'#0a6b3a',
+                 600:'#118a4c', 500:'#1aa55e', 400:'#3cc77c', 300:'#86e3ad' },
+        warm:  { 700:'#a8311d', 600:'#c93b22', 500:'#e2452a',
+                 400:'#ef6a4f', 300:'#f59578' },
+        sand:  { 50:'#fdfaf3', 100:'#fbf6ec', 200:'#f3ead7', 300:'#e7d8b3' },
+        ink:   { 900:'#0e1413', 700:'#2b3433', 500:'#5a6664', 400:'#7c8786' },
+      },
+      fontFamily: {
+        sans:    ['Tajawal', 'system-ui', 'sans-serif'],
+        display: ['"Bebas Neue"', 'Tajawal', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+
+<!-- Global styles (pitch-stripes, stadium-glow, meRing, etc.) -->
+<style>
+  html, body { background: #0e1413; font-family: 'Tajawal', system-ui, sans-serif; }
+
+  .pitch-stripes {
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.04) 0 28px,
+      rgba(255,255,255,0) 28px 56px);
+  }
+  .pitch-stripes-dark {
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0 24px,
+      rgba(0,0,0,0) 24px 48px);
+  }
+  .stadium-glow {
+    background:
+      radial-gradient(120% 60% at 50% -10%, rgba(60,199,124,0.25), transparent 60%),
+      radial-gradient(80% 40% at 100% 0%,  rgba(226,69,42,0.18),  transparent 60%);
+  }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .scroll-x { scrollbar-width: none; }
+  .scroll-x::-webkit-scrollbar { display: none; }
+  input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  select { background-position: left 0.75rem center; }
+  .ring-soft {
+    box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset,
+                0 6px 18px -8px rgba(0,0,0,0.45);
+  }
+  /* current-user row pulse */
+  @keyframes meRing {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(226,69,42,0.55); }
+    50%       { box-shadow: 0 0 0 6px rgba(226,69,42,0); }
+  }
+  .me-row { animation: meRing 2.4s ease-out infinite; }
+
+  /* Custom select chevron */
+  .custom-select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%230a4d29' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: left 0.75rem center;
+    background-size: 12px;
+  }
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen text-ink-900">
+
+<!-- Phone frame -->
+<div class="mx-auto max-w-[420px] min-h-screen bg-sand-100 relative overflow-x-hidden">
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="fixed top-3 inset-x-0 z-[60] px-4 max-w-[420px] mx-auto space-y-2">
+        {% for category, msg in messages %}
+          <div class="rounded-2xl px-4 py-3 text-sm font-bold shadow-lg
+            {% if category == 'error' %}bg-warm-500 text-white
+            {% else %}bg-pitch-700 text-white{% endif %}">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+
+  <!-- Bottom navigation — hidden on login -->
+  {% if current_user %}
+  <nav class="fixed bottom-0 inset-x-0 z-40 max-w-[420px] mx-auto
+              bg-white/95 backdrop-blur border-t border-black/5">
+    <ul class="grid grid-cols-3 h-16">
+
+      <!-- Home -->
+      <li>
+        <a href="{{ url_for('dashboard') }}"
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+                  {{ 'text-pitch-700' if active_tab == 'dashboard' else 'text-ink-400' }}">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
+               stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
+            <path d="M3 12 12 4l9 8"/><path d="M5 10v10h14V10"/>
+          </svg>
+          الرئيسية
+        </a>
+      </li>
+
+      <!-- Predict -->
+      <li>
+        {% set predict_url = url_for('predict_phase1') %}
+        {% if all_phases %}
+          {% for ph in all_phases %}
+            {% if ph.status == 'open' %}
+              {% if ph.id == 1 %}{% set predict_url = url_for('predict_phase1') %}
+              {% elif ph.id == 2 %}{% set predict_url = url_for('predict_phase2') %}
+              {% elif ph.id == 3 %}{% set predict_url = url_for('predict_phase3') %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+        <a href="{{ predict_url }}"
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+                  {{ 'text-pitch-700' if active_tab == 'predict' else 'text-ink-400' }}">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
+               stroke="currentColor" stroke-width="1.9">
+            <rect x="4" y="5" width="16" height="15" rx="2"/>
+            <path d="M8 3v4M16 3v4M4 11h16"/>
+          </svg>
+          التوقعات
+        </a>
+      </li>
+
+      <!-- Leaderboard -->
+      <li>
+        <a href="{{ url_for('leaderboard') }}"
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+                  {{ 'text-pitch-700' if active_tab == 'board' else 'text-ink-400' }}">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
+               stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 21V10M12 21V4M18 21v-7"/>
+          </svg>
+          الترتيب
+        </a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+
+</div><!-- /phone frame -->
+
+<!-- Countdown JS (used by predict + dashboard) -->
+<script>
+function startCountdown(isoDeadline, elementId) {
+  const el = document.getElementById(elementId);
+  if (!el || !isoDeadline) return;
+  function pad(n) { return String(n).padStart(2, '0'); }
+  function update() {
+    const diff = new Date(isoDeadline) - new Date();
+    if (diff <= 0) { el.textContent = 'مغلق'; return; }
+    const d = Math.floor(diff / 86400000);
+    const h = Math.floor((diff % 86400000) / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    el.textContent = pad(d) + ':' + pad(h) + ':' + pad(m);
+  }
+  update();
+  setInterval(update, 30000);
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "Bash(Sort-Object FullName)",
+      "PowerShell(ls -Recurse \"c:\\\\Users\\\\omars\\\\Documents\\\\VPProjects\\\\WorldCup\" -Force | ForEach-Object { $_.FullName })",
+      "PowerShell(tree \"c:\\\\Users\\\\omars\\\\Documents\\\\VPProjects\\\\WorldCup\" -L 3 -I \".git\")",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\omars\\\\Documents\\\\VPProjects\\\\WorldCup\" -Exclude \".git\" | ForEach-Object { $_.FullName })",
+      "Read(//c/Users/omars/.claude/projects/c--Users-omars-Documents-VPProjects-WorldCup/bb33852d-e0e9-4534-96ad-9ab7dbbadb45/tool-results/**)",
+      "Bash(gunzip -c webfetch-1779544168442-gnubnz.bin)",
+      "Bash(tar -x --to-stdout worldcup/chats/chat1.md)",
+      "Read(//tmp/**)",
+      "Bash(python -m venv venv)",
+      "Bash(venv/Scripts/pip install *)",
+      "Bash(venv/Scripts/python -c ' *)",
+      "Bash(git push *)",
+      "Bash(gh auth *)",
+      "Bash(git config *)",
+      "Bash(rm -rf .git)",
+      "Bash(git init *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}توقعات المرحلة 1{% endblock %}
+
+{% block content %}
+<section class="flex flex-col min-h-screen pb-28">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="bg-pitch-900 text-sand-50 px-5 pt-14 pb-6 stadium-glow relative overflow-hidden">
+    <div class="absolute inset-x-0 bottom-0 h-16 pitch-stripes opacity-60"></div>
+
+    <div class="relative">
+      <a href="{{ url_for('dashboard') }}"
+         class="text-pitch-300 text-sm font-bold flex items-center gap-1">
+        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor"
+             stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 6 6 6-6 6"/>
+        </svg>
+        الرئيسية
+      </a>
+
+      <div class="mt-3 flex items-end justify-between">
+        <div>
+          <div class="text-[10px] tracking-[0.25em] text-pitch-300 uppercase">المرحلة 1</div>
+          <h2 class="font-black text-2xl leading-tight mt-1">دور المجموعات</h2>
+        </div>
+        {% if deadline_iso %}
+        <div class="text-end leading-tight">
+          <div class="text-[10px] text-pitch-300 tracking-widest">يُغلق بعد</div>
+          <div id="countdown-predict" class="font-display text-2xl tabular text-warm-400">––:––:––</div>
+        </div>
+        {% elif phase.status == 'locked' %}
+        <div class="text-warm-400 font-bold text-sm">مغلقة</div>
+        {% endif %}
+      </div>
+
+      <!-- Progress bar -->
+      <div class="mt-5">
+        <div class="flex justify-between text-[11px] text-pitch-300 mb-1.5">
+          <span>التقدّم</span>
+          <span class="text-sand-100 font-bold tabular">{{ filled }} / {{ total }}</span>
+        </div>
+        <div class="h-2 rounded-full bg-white/10 overflow-hidden">
+          <div class="h-full bg-warm-500 transition-all" style="width:{{ pct }}%"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Locked notice ───────────────────────────────────────────────────── -->
+  {% if phase.status == 'locked' %}
+  <div class="mx-5 mt-6 bg-ink-900/10 border-2 border-dashed border-ink-400/30
+              rounded-2xl px-4 py-4 text-center text-ink-500 text-sm font-bold">
+    تم إغلاق توقعات هذه المرحلة. يمكنك مشاهدة ما أدخلته أدناه.
+  </div>
+  {% endif %}
+
+  <form method="POST" action="{{ url_for('predict_phase1') }}" class="px-5 mt-6 space-y-8">
+
+    <!-- ── Groups A-L ──────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">المتأهلون من المجموعات</h3>
+      </div>
+      <p class="text-xs text-ink-500 mb-4 -mt-1.5">
+        اختر متصدّر ووصيف كل مجموعة. {{ config_scores.group_winner }} نقاط للأول، {{ config_scores.group_runner }} للثاني.
+      </p>
+
+      <div class="space-y-3">
+        {% for letter, group_teams in groups.items() %}
+        {% set pick = pred.group_picks.get(letter, {}) if pred and pred.group_picks else {} %}
+        {% set is_complete = pick.get('winner') and pick.get('runner') %}
+        <div class="bg-white rounded-2xl ring-1 {{ 'ring-black/5' if is_complete else 'ring-warm-500/40' }} p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div class="font-black text-pitch-800 flex items-center gap-2">
+              <span class="font-display text-2xl tabular leading-none">{{ letter }}</span>
+              <span class="text-sm">المجموعة</span>
+            </div>
+            <span class="text-[10px] font-bold px-2 py-1 rounded-full
+                         {{ 'bg-pitch-700/10 text-pitch-800' if is_complete else 'bg-warm-500/15 text-warm-700' }}">
+              {{ 'مكتملة' if is_complete else 'ناقصة' }}
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Winner -->
+            <label class="block">
+              <span class="block text-[11px] font-bold text-ink-700 mb-1">المتصدّر</span>
+              <select name="group_{{ letter }}_winner"
+                {{ 'disabled' if phase.status == 'locked' }}
+                class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                       custom-select appearance-none
+                       {{ 'opacity-60' if phase.status == 'locked' }}">
+                <option value="">— اختر —</option>
+                {% for team in group_teams %}
+                <option value="{{ team }}" {{ 'selected' if pick.get('winner') == team }}>
+                  {{ team }}
+                </option>
+                {% endfor %}
+              </select>
+            </label>
+
+            <!-- Runner -->
+            <label class="block">
+              <span class="block text-[11px] font-bold text-ink-700 mb-1">الوصيف</span>
+              <select name="group_{{ letter }}_runner"
+                {{ 'disabled' if phase.status == 'locked' }}
+                class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                       custom-select appearance-none
+                       {{ 'ring-2 ring-warm-500/50' if not pick.get('runner') and phase.status != 'locked' else '' }}
+                       {{ 'opacity-60' if phase.status == 'locked' }}">
+                <option value="">— اختر —</option>
+                {% for team in group_teams %}
+                <option value="{{ team }}" {{ 'selected' if pick.get('runner') == team }}>
+                  {{ team }}
+                </option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- ── Total goals ─────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">مجموع أهداف البطولة</h3>
+      </div>
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+        <label class="block">
+          <span class="block text-[11px] font-bold text-ink-700 mb-1">العدد المتوقَّع</span>
+          <input type="number" name="total_goals" min="0" max="400"
+            value="{{ pred.total_goals if pred and pred.total_goals is not none else '' }}"
+            {{ 'disabled' if phase.status == 'locked' }}
+            placeholder="مثال: 175"
+            class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                   outline-none focus:ring-2 focus:ring-pitch-500
+                   {{ 'opacity-60' if phase.status == 'locked' }}" />
+        </label>
+        <div class="mt-2 text-[11px] text-ink-500 flex items-center gap-2">
+          <svg viewBox="0 0 12 12" class="w-3 h-3 fill-warm-500 shrink-0"><circle cx="6" cy="6" r="6"/></svg>
+          إصابة تامة +10 · فارق ±5 أهداف +5
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Golden Boot ─────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">الهداف (الحذاء الذهبي)</h3>
+      </div>
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+        <label class="block">
+          <span class="block text-[11px] font-bold text-ink-700 mb-1">اللاعب المتوقَّع</span>
+          <select name="golden_boot"
+            {{ 'disabled' if phase.status == 'locked' }}
+            class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                   custom-select appearance-none
+                   {{ 'opacity-60' if phase.status == 'locked' }}">
+            <option value="">— اختر اللاعب —</option>
+            {% for player in players %}
+            <option value="{{ player }}" {{ 'selected' if pred and pred.golden_boot == player }}>
+              {{ player }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="mt-2 text-[11px] text-ink-500 flex items-center gap-2">
+          <svg viewBox="0 0 12 12" class="w-3 h-3 fill-warm-500 shrink-0"><circle cx="6" cy="6" r="6"/></svg>
+          10 نقاط · يُحسم في نهاية البطولة
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Golden Ball ─────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">أفضل لاعب (الكرة الذهبية)</h3>
+      </div>
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+        <label class="block">
+          <span class="block text-[11px] font-bold text-ink-700 mb-1">اللاعب المتوقَّع</span>
+          <select name="golden_ball"
+            {{ 'disabled' if phase.status == 'locked' }}
+            class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                   custom-select appearance-none
+                   {{ 'opacity-60' if phase.status == 'locked' }}">
+            <option value="">— اختر اللاعب —</option>
+            {% for player in players %}
+            <option value="{{ player }}" {{ 'selected' if pred and pred.golden_ball == player }}>
+              {{ player }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="mt-2 text-[11px] text-ink-500 flex items-center gap-2">
+          <svg viewBox="0 0 12 12" class="w-3 h-3 fill-warm-500 shrink-0"><circle cx="6" cy="6" r="6"/></svg>
+          10 نقاط · اختياري
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Dark horse ──────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">الحصان الأسود</h3>
+      </div>
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+        <p class="text-xs text-ink-500 mb-3">منتخب خارج التوقعات يتجاوز دور المجموعات.</p>
+        <label class="block">
+          <select name="dark_horse"
+            {{ 'disabled' if phase.status == 'locked' }}
+            class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                   custom-select appearance-none
+                   {{ 'opacity-60' if phase.status == 'locked' }}">
+            <option value="">— اختر منتخبًا —</option>
+            {% for team in teams %}
+            <option value="{{ team }}" {{ 'selected' if pred and pred.dark_horse == team }}>
+              {{ team }}
+            </option>
+            {% endfor %}
+          </select>
+        </label>
+        <div class="mt-2 text-[11px] text-ink-500 flex items-center gap-2">
+          <svg viewBox="0 0 12 12" class="w-3 h-3 fill-warm-500 shrink-0"><circle cx="6" cy="6" r="6"/></svg>
+          8 نقاط · اختياري
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Wildcard ────────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-3">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">الورقة الجامحة</h3>
+      </div>
+      <div class="bg-pitch-900 text-sand-50 rounded-2xl p-4 relative overflow-hidden">
+        <div class="absolute inset-x-0 bottom-0 h-12 pitch-stripes opacity-50"></div>
+        <p class="text-xs text-pitch-300 relative">
+          توقّع حدثًا غريبًا في البطولة. إن وقع، تحصل على نقاط إضافية يحددها المسؤول.
+        </p>
+        <textarea name="wildcard" rows="3" maxlength="140"
+          {{ 'disabled' if phase.status == 'locked' }}
+          placeholder="مثال: مباراة تنتهي بضربات الترجيح في دور المجموعات…"
+          class="relative mt-3 w-full bg-ink-900/40 ring-1 ring-white/10 rounded-xl p-3
+                 text-sm placeholder:text-pitch-300/60 outline-none
+                 focus:ring-2 focus:ring-warm-500 resize-none
+                 {{ 'opacity-60' if phase.status == 'locked' }}"
+        >{{ pred.wildcard if pred and pred.wildcard else '' }}</textarea>
+        <div class="relative mt-2 flex justify-between text-[11px] text-pitch-300">
+          <span>اختياري · النقاط يحددها المسؤول</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Submit button (only when open) ─────────────────────────────── -->
+    {% if phase.status == 'open' %}
+    <div class="fixed bottom-16 inset-x-0 px-5 z-30 max-w-[420px] mx-auto pointer-events-none">
+      <button type="submit"
+        class="pointer-events-auto w-full h-14 rounded-2xl bg-warm-500 hover:bg-warm-600
+               text-white font-extrabold tracking-wide ring-soft shadow-lg shadow-warm-500/30">
+        احفظ التوقعات
+      </button>
+    </div>
+    {% endif %}
+
+  </form>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if deadline_iso %}
+<script>startCountdown('{{ deadline_iso }}', 'countdown-predict');</script>
+{% endif %}
+{% endblock %}
