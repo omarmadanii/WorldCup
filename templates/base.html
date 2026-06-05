@@ -106,12 +106,12 @@ tailwind.config = {
   {% if current_user %}
   <nav class="fixed bottom-0 inset-x-0 z-40 max-w-[420px] mx-auto
               bg-white/95 backdrop-blur border-t border-black/5">
-    <ul class="grid grid-cols-3 h-16">
+    <ul class="grid grid-cols-4 h-16">
 
       <!-- Home -->
       <li>
         <a href="{{ url_for('dashboard') }}"
-           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold
                   {{ 'text-pitch-700' if active_tab == 'dashboard' else 'text-ink-400' }}">
           <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
                stroke="currentColor" stroke-width="1.9" stroke-linejoin="round">
@@ -135,7 +135,7 @@ tailwind.config = {
           {% endfor %}
         {% endif %}
         <a href="{{ predict_url }}"
-           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold
                   {{ 'text-pitch-700' if active_tab == 'predict' else 'text-ink-400' }}">
           <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
                stroke="currentColor" stroke-width="1.9">
@@ -149,13 +149,27 @@ tailwind.config = {
       <!-- Leaderboard -->
       <li>
         <a href="{{ url_for('leaderboard') }}"
-           class="flex flex-col items-center justify-center gap-0.5 h-full text-[11px] font-bold
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold
                   {{ 'text-pitch-700' if active_tab == 'board' else 'text-ink-400' }}">
           <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
                stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
             <path d="M6 21V10M12 21V4M18 21v-7"/>
           </svg>
           الترتيب
+        </a>
+      </li>
+
+      <!-- Rules -->
+      <li>
+        <a href="{{ url_for('rules') }}"
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold
+                  {{ 'text-pitch-700' if active_tab == 'rules' else 'text-ink-400' }}">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
+               stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 8v4M12 16h.01"/>
+          </svg>
+          القواعد
         </a>
       </li>
     </ul>

@@ -32,16 +32,22 @@ def compute_phase1_score(user_id, results: dict) -> int:
     score = 0
     gp = pred.get('group_picks', {})
 
-    # Group winners / runners
+    # Group qualifiers: +1 if team makes R32, +1 bonus if exact position correct
     for letter in WC_GROUPS:
         real_winner = results.get(f'p1_group_{letter.lower()}_winner')
         real_runner = results.get(f'p1_group_{letter.lower()}_runner')
         pick = gp.get(letter, {})
 
-        if real_winner and pick.get('winner') == real_winner:
-            score += SCORES['group_winner']
-        if real_runner and pick.get('runner') == real_runner:
-            score += SCORES['group_runner']
+        for picked, exact_match in [
+            (pick.get('winner'), real_winner),
+            (pick.get('runner'), real_runner),
+        ]:
+            if not picked:
+                continue
+            if picked == real_winner or picked == real_runner:
+                score += SCORES['group_qualified']
+                if picked == exact_match:
+                    score += SCORES['group_position_bonus']
 
     # Total goals
     real_goals = _int_or_none(results.get('p1_total_goals'))
@@ -70,6 +76,9 @@ def compute_phase1_score(user_id, results: dict) -> int:
 
     # Wildcard (admin-assigned points stored directly on the prediction row)
     score += int(pred.get('wildcard_pts') or 0)
+
+    # اختبار الدهاء (admin-assigned, max 10)
+    score += int(pred.get('dawha_pts') or 0)
 
     return score
 
@@ -155,14 +164,6 @@ def compute_phase3_score(user_id, results: dict) -> int:
     # Which semifinal has more goals?
     r_semi = results.get('p3_more_goals_semi')
     if r_semi and pred.get('more_goals_semi') == r_semi:
-        score += S
-
-    # Exact chaos final score
-    r_h = _int_or_none(results.get('p3_exact_final_home'))
-    r_a = _int_or_none(results.get('p3_exact_final_away'))
-    p_h = _int_or_none(pred.get('exact_final_home'))
-    p_a = _int_or_none(pred.get('exact_final_away'))
-    if None not in (r_h, r_a, p_h, p_a) and r_h == p_h and r_a == p_a:
         score += S
 
     # Total red cards remaining

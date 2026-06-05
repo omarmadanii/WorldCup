@@ -21,13 +21,20 @@
         </div>
       </div>
 
-      {% if current_user['is_admin'] %}
-      <a href="{{ url_for('admin_results') }}"
-         class="text-[11px] font-bold bg-warm-500/20 text-warm-300 px-3 py-1.5 rounded-full
-                ring-1 ring-warm-400/30">
-        لوحة الإدارة
-      </a>
-      {% endif %}
+      <div class="flex items-center gap-2">
+        <a href="{{ url_for('rules') }}"
+           class="text-[11px] font-bold bg-pitch-800/60 text-pitch-300 px-3 py-1.5 rounded-full
+                  ring-1 ring-pitch-600/30">
+          القواعد
+        </a>
+        {% if current_user['is_admin'] %}
+        <a href="{{ url_for('admin_results') }}"
+           class="text-[11px] font-bold bg-warm-500/20 text-warm-300 px-3 py-1.5 rounded-full
+                  ring-1 ring-warm-400/30">
+          الإدارة
+        </a>
+        {% endif %}
+      </div>
     </div>
 
     <!-- Countdown / phase card -->

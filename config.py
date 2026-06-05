@@ -63,23 +63,23 @@ TOP_PLAYERS = [p for p in TOP_PLAYERS if not (p in seen or seen.add(p))]
 # ── Scoring values (edit here → scoring.py reads from here) ───────────────
 # All values match GAME_RULES.md placeholders — change freely.
 SCORES = {
-    'group_winner':        5,
-    'group_runner':        3,
-    'dark_horse':          8,
-    'total_goals_exact':  10,
-    'total_goals_near':    5,   # within ±5 of actual
+    'group_qualified':      1,   # team makes it to R32 (regardless of position)
+    'group_position_bonus': 1,   # extra: position (1st or 2nd) also correct
+    'dark_horse':           8,
+    'total_goals_exact':   10,
+    'total_goals_near':     5,   # within ±5 of actual
     'total_goals_near_range': 5,
-    'golden_boot_p1':     10,
-    'golden_ball':        10,
-    'r32_winner':          3,
-    'quarterfinalist':     5,
-    'semifinalist':        8,
-    'finalist':           10,
-    'champion':           20,
-    'exact_final_score':  25,
-    'penalty_count':       8,
-    'golden_boot_p2':     10,
-    'chaos_item':          5,
+    'golden_boot_p1':      10,
+    'golden_ball':         10,
+    'r32_winner':           3,
+    'quarterfinalist':      5,
+    'semifinalist':         8,
+    'finalist':            10,
+    'champion':            20,
+    'exact_final_score':   10,
+    'penalty_count':        8,
+    'golden_boot_p2':      10,
+    'chaos_item':           5,
 }
 
 # ── Phase names (Arabic display strings) ──────────────────────────────────

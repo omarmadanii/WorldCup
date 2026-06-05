@@ -2,10 +2,9 @@
 app.py — Flask routes. Keep thin; logic lives in models.py / scoring.py.
 """
 from functools import wraps
-from datetime import datetime, timezone
 
 from flask import (Flask, render_template, request, redirect,
-                   url_for, session, flash, g)
+                   url_for, session, flash)
 
 import models
 import scoring
@@ -203,18 +202,24 @@ def predict_phase1():
                 'runner': runner or None,
             }
 
-        try:
-            total_goals = int(request.form.get('total_goals', ''))
-        except (ValueError, TypeError):
-            total_goals = None
+        def _int_field(key):
+            try:
+                return int(request.form.get(key, ''))
+            except (ValueError, TypeError):
+                return None
 
         data = {
-            'group_picks': group_picks,
-            'total_goals': total_goals,
-            'golden_boot': request.form.get('golden_boot', '').strip() or None,
-            'golden_ball': request.form.get('golden_ball', '').strip() or None,
-            'dark_horse':  request.form.get('dark_horse', '').strip() or None,
-            'wildcard':    request.form.get('wildcard', '').strip() or None,
+            'group_picks':       group_picks,
+            'total_goals':       _int_field('total_goals'),
+            'golden_boot':       request.form.get('golden_boot', '').strip() or None,
+            'golden_ball':       request.form.get('golden_ball', '').strip() or None,
+            'dark_horse':        request.form.get('dark_horse', '').strip() or None,
+            'wildcard':          request.form.get('wildcard', '').strip() or None,
+            'dawha_ronaldo':     request.form.get('dawha_ronaldo', '').strip() or None,
+            'dawha_bulga_goals': _int_field('dawha_bulga_goals'),
+            'dawha_uncle':       request.form.get('dawha_uncle', '').strip() or None,
+            'dawha_jeddah':      request.form.get('dawha_jeddah', '').strip() or None,
+            'dawha_car':         request.form.get('dawha_car', '').strip() or None,
         }
         models.save_phase1_prediction(uid, data)
         flash('تم حفظ توقعاتك بنجاح!', 'success')
@@ -316,8 +321,6 @@ def predict_phase3():
             'final_to_penalties':  ftp,
             'first_scorer':        request.form.get('first_scorer', '').strip() or None,
             'more_goals_semi':     request.form.get('more_goals_semi', '').strip() or None,
-            'exact_final_home':    _int('exact_final_home'),
-            'exact_final_away':    _int('exact_final_away'),
             'red_cards_remaining': _int('red_cards_remaining'),
         }
         models.save_phase3_prediction(uid, data)
@@ -393,12 +396,18 @@ def admin_players():
             user_id = int(request.form.get('user_id', 0))
             pts = request.form.get('wildcard_pts', 0)
             models.set_wildcard_pts(user_id, pts)
-            flash('تم تحديث نقاط الورقة الجامحة.', 'success')
+            flash('تم تحديث نقاط الرابحة.', 'success')
+
+        elif action == 'set_dawha':
+            user_id = int(request.form.get('user_id', 0))
+            pts = request.form.get('dawha_pts', 0)
+            models.set_dawha_pts(user_id, pts)
+            flash('تم تحديث نقاط اختبار الدهاء.', 'success')
 
         return redirect(url_for('admin_players'))
 
     users = models.list_users(include_admin=False)
-    # Attach their phase1 prediction (for wildcard display)
+    # Attach their phase1 prediction (for wildcard + dawha display)
     player_data = []
     for u in users:
         p1 = models.get_phase1_prediction(u['id'])
@@ -406,6 +415,12 @@ def admin_players():
             'user': dict(u),
             'wildcard': p1.get('wildcard') if p1 else None,
             'wildcard_pts': p1.get('wildcard_pts', 0) if p1 else 0,
+            'dawha_ronaldo':     p1.get('dawha_ronaldo') if p1 else None,
+            'dawha_bulga_goals': p1.get('dawha_bulga_goals') if p1 else None,
+            'dawha_uncle':       p1.get('dawha_uncle') if p1 else None,
+            'dawha_jeddah':      p1.get('dawha_jeddah') if p1 else None,
+            'dawha_car':         p1.get('dawha_car') if p1 else None,
+            'dawha_pts':         p1.get('dawha_pts', 0) if p1 else 0,
         })
 
     return render_template(
@@ -531,6 +546,14 @@ def admin_results():
         players=TOP_PLAYERS,
         groups_dict=WC_GROUPS,
     )
+
+
+# ── Rules page ────────────────────────────────────────────────────────────
+
+@app.route('/rules')
+@login_required
+def rules():
+    return render_template('rules.html', active_tab='rules')
 
 
 # ── Dev entry point ────────────────────────────────────────────────────────

@@ -26,7 +26,6 @@ until that phase locks.
 - **Locks:** automatically when the first match kicks off.
 - **Players predict:**
   - Group winners and runners-up (per group)
-  - Teams eliminated in the group stage
   - Total tournament goals
   - Top scorer (Golden Boot)
   - Best player (Golden Ball)
@@ -64,9 +63,8 @@ until that phase locks.
 
 | Prediction | Points |
 |---|---|
-| Correct group winner | +5 |
-| Correct group runner-up | +3 |
-| Correctly named eliminated team | +3 |
+| Correct group winner | +2 |
+| Correct group runner-up | +2 |
 | Total tournament goals (exact / within range) | +10 / +5 |
 | Top scorer (Golden Boot) | +10 |
 | Best player (Golden Ball) | +10 |

@@ -82,7 +82,7 @@
           <!-- Wildcard preview -->
           {% if pd.wildcard %}
           <div class="mb-3 bg-pitch-900/5 rounded-xl px-3 py-2 text-xs text-ink-700">
-            <span class="font-bold text-pitch-800">الورقة الجامحة:</span> {{ pd.wildcard }}
+            <span class="font-bold text-pitch-800">الرابحة:</span> {{ pd.wildcard }}
           </div>
 
           <!-- Wildcard points form -->
@@ -91,11 +91,52 @@
             <input type="hidden" name="action" value="set_wildcard" />
             <input type="hidden" name="user_id" value="{{ pd.user.id }}" />
             <label class="flex-1 flex items-center gap-2">
-              <span class="text-xs font-bold text-ink-700 shrink-0">نقاط الورقة:</span>
+              <span class="text-xs font-bold text-ink-700 shrink-0">نقاط الرابحة:</span>
               <input type="number" name="wildcard_pts" min="0" max="100"
                 value="{{ pd.wildcard_pts }}"
                 class="w-20 h-10 bg-sand-100 rounded-xl px-2 font-bold text-sm
                        outline-none focus:ring-2 focus:ring-pitch-500" />
+            </label>
+            <button type="submit"
+              class="h-10 px-4 rounded-xl bg-pitch-700 text-white font-bold text-xs">
+              حفظ
+            </button>
+          </form>
+          {% endif %}
+
+          <!-- Dawha answers -->
+          {% if pd.dawha_ronaldo or pd.dawha_bulga_goals is not none or pd.dawha_uncle or pd.dawha_jeddah or pd.dawha_car %}
+          <div class="mb-3 bg-pitch-900/8 rounded-xl px-3 py-3 space-y-1.5">
+            <div class="text-[10px] font-extrabold text-pitch-700 tracking-widest uppercase mb-2">اختبار الدهاء</div>
+            {% if pd.dawha_ronaldo %}
+            <div class="text-xs text-ink-700"><span class="font-bold">دمعة رونالدو:</span> {{ pd.dawha_ronaldo }}</div>
+            {% endif %}
+            {% if pd.dawha_bulga_goals is not none %}
+            <div class="text-xs text-ink-700"><span class="font-bold">البولغا:</span> {{ pd.dawha_bulga_goals }} هدف</div>
+            {% endif %}
+            {% if pd.dawha_uncle %}
+            <div class="text-xs text-ink-700"><span class="font-bold">العم:</span> {{ pd.dawha_uncle }}</div>
+            {% endif %}
+            {% if pd.dawha_jeddah %}
+            <div class="text-xs text-ink-700"><span class="font-bold">أفضل حي:</span> {{ pd.dawha_jeddah }}</div>
+            {% endif %}
+            {% if pd.dawha_car %}
+            <div class="text-xs text-ink-700"><span class="font-bold">أفخم سيارة:</span> {{ pd.dawha_car }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Dawha points form -->
+          <form method="POST" action="{{ url_for('admin_players') }}"
+                class="flex items-center gap-2 mb-3">
+            <input type="hidden" name="action" value="set_dawha" />
+            <input type="hidden" name="user_id" value="{{ pd.user.id }}" />
+            <label class="flex-1 flex items-center gap-2">
+              <span class="text-xs font-bold text-ink-700 shrink-0">نقاط الدهاء:</span>
+              <input type="number" name="dawha_pts" min="0" max="5"
+                value="{{ pd.dawha_pts }}"
+                class="w-20 h-10 bg-sand-100 rounded-xl px-2 font-bold text-sm
+                       outline-none focus:ring-2 focus:ring-pitch-500" />
+              <span class="text-[11px] text-ink-400">/ 5</span>
             </label>
             <button type="submit"
               class="h-10 px-4 rounded-xl bg-pitch-700 text-white font-bold text-xs">

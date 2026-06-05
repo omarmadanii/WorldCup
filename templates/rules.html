@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}قواعد اللعبة{% endblock %}
+
+{% block content %}
+<section class="flex flex-col min-h-screen pb-24">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <header class="bg-pitch-900 text-sand-50 px-5 pt-14 pb-6 stadium-glow relative overflow-hidden">
+    <div class="absolute inset-x-0 bottom-0 h-16 pitch-stripes opacity-60"></div>
+    <div class="relative">
+      <a href="{{ url_for('dashboard') }}"
+         class="text-pitch-300 text-sm font-bold flex items-center gap-1">
+        <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor"
+             stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m9 6 6 6-6 6"/>
+        </svg>
+        الرئيسية
+      </a>
+      <div class="mt-3">
+        <div class="text-[10px] tracking-[0.25em] text-pitch-300 uppercase">كيف تلعب</div>
+        <h2 class="font-black text-2xl leading-tight mt-1">قواعد اللعبة</h2>
+        <p class="text-pitch-300 text-sm mt-2 leading-relaxed">
+          توقّع الأحداث الصحيحة، اجمع النقاط، وتصدّر الترتيب!
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <div class="px-5 mt-6 space-y-6 pb-4">
+
+    <!-- ── General concept ───────────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+      <p class="text-sm text-ink-700 leading-relaxed">
+        اللعبة على <span class="font-extrabold text-pitch-800">ثلاث مراحل</span>.
+        تقدّم توقعاتك قبل إغلاق كل مرحلة، ولا يمكن تعديلها بعد الإغلاق.
+        لا أحد يرى توقعات الآخرين حتى تُغلق المرحلة.
+        النقاط تُحسب تلقائيًا بعد إدخال النتائج.
+      </p>
+    </div>
+
+    <!-- ── Phase 1 ────────────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-9 h-9 rounded-xl bg-pitch-700 text-white font-display text-2xl
+                    grid place-items-center leading-none shrink-0">1</div>
+        <div>
+          <div class="text-[10px] tracking-[0.2em] text-ink-500 uppercase">المرحلة الأولى</div>
+          <h3 class="font-extrabold text-base leading-tight">دور المجموعات</h3>
+        </div>
+      </div>
+      <p class="text-xs text-ink-500 mb-3 mr-12">تُفتح قبل انطلاق البطولة وتُغلق مع صافرة أول مباراة.</p>
+
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
+        <div class="px-4 py-2 bg-pitch-900/5 border-b border-black/5
+                    flex justify-between text-[10px] tracking-[0.15em] font-bold text-ink-500 uppercase">
+          <span>التوقّع</span><span>النقاط</span>
+        </div>
+        {% set p1_rows = [
+          ('منتخب يتأهل من مجموعته (بغض النظر عن المركز)', config_scores.group_qualified ~ ' نقطة'),
+          ('المركز صحيح أيضًا (1st أو 2nd)', '+ ' ~ config_scores.group_position_bonus ~ ' نقطة إضافية'),
+          ('الحد الأقصى من كل مجموعة', '4 نقاط (منتخبَيْن × 2)'),
+          ('مجموع أهداف البطولة — إصابة تامة', config_scores.total_goals_exact ~ ' نقاط'),
+          ('مجموع أهداف البطولة — فارق ±5 أهداف', config_scores.total_goals_near ~ ' نقاط'),
+          ('الحذاء الذهبي', config_scores.golden_boot_p1 ~ ' نقاط'),
+          ('الكرة الذهبية', config_scores.golden_ball ~ ' نقاط'),
+          ('الحصان الأسود', config_scores.dark_horse ~ ' نقاط'),
+          ('الرابحة', 'يحددها المسؤول'),
+          ('اختبار الدهاء (5 أسئلة)', '1 نقطة لكل سؤال'),
+        ] %}
+        <ul class="divide-y divide-black/5">
+          {% for label, pts in p1_rows %}
+          <li class="px-4 py-3 flex items-center justify-between gap-3">
+            <span class="text-sm font-bold text-ink-800 leading-tight">{{ label }}</span>
+            <span class="text-sm font-extrabold text-pitch-700 tabular shrink-0">{{ pts }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Phase 2 ────────────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-9 h-9 rounded-xl bg-pitch-700 text-white font-display text-2xl
+                    grid place-items-center leading-none shrink-0">2</div>
+        <div>
+          <div class="text-[10px] tracking-[0.2em] text-ink-500 uppercase">المرحلة الثانية</div>
+          <h3 class="font-extrabold text-base leading-tight">دور الخروج</h3>
+        </div>
+      </div>
+      <p class="text-xs text-ink-500 mb-3 mr-12">تُفتح بعد انتهاء دور المجموعات وتُغلق قبل أول مباراة إقصائية.</p>
+
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
+        <div class="px-4 py-2 bg-pitch-900/5 border-b border-black/5
+                    flex justify-between text-[10px] tracking-[0.15em] font-bold text-ink-500 uppercase">
+          <span>التوقّع</span><span>النقاط</span>
+        </div>
+        {% set p2_rows = [
+          ('المتأهل من دور الـ32 (كل منتخب)', config_scores.r32_winner ~ ' نقاط'),
+          ('المتأهل لربع النهائي (كل منتخب)', config_scores.quarterfinalist ~ ' نقاط'),
+          ('المتأهل لنصف النهائي (كل منتخب)', config_scores.semifinalist ~ ' نقاط'),
+          ('المتأهل للنهائي (كل منتخب)', config_scores.finalist ~ ' نقاط'),
+          ('البطل', config_scores.champion ~ ' نقاط'),
+          ('نتيجة النهائي بالضبط', config_scores.exact_final_score ~ ' نقاط'),
+          ('عدد مباريات الترجيح في الإقصائيات', config_scores.penalty_count ~ ' نقاط'),
+          ('الحذاء الذهبي', config_scores.golden_boot_p2 ~ ' نقاط'),
+        ] %}
+        <ul class="divide-y divide-black/5">
+          {% for label, pts in p2_rows %}
+          <li class="px-4 py-3 flex items-center justify-between gap-3">
+            <span class="text-sm font-bold text-ink-800 leading-tight">{{ label }}</span>
+            <span class="text-sm font-extrabold text-pitch-700 tabular shrink-0">{{ pts }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Phase 3 ────────────────────────────────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-9 h-9 rounded-xl bg-warm-500 text-white font-display text-2xl
+                    grid place-items-center leading-none shrink-0">3</div>
+        <div>
+          <div class="text-[10px] tracking-[0.2em] text-ink-500 uppercase">المرحلة الثالثة</div>
+          <h3 class="font-extrabold text-base leading-tight">جولة الفوضى</h3>
+        </div>
+      </div>
+      <p class="text-xs text-ink-500 mb-3 mr-12">تُفتح قُرب نهاية البطولة. نافذة قصيرة، توقعات سريعة.</p>
+
+      <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
+        <div class="px-4 py-2 bg-pitch-900/5 border-b border-black/5
+                    flex justify-between text-[10px] tracking-[0.15em] font-bold text-ink-500 uppercase">
+          <span>التوقّع</span><span>النقاط</span>
+        </div>
+        {% set p3_rows = [
+          ('هل يذهب النهائي إلى الترجيح؟', config_scores.chaos_item ~ ' نقاط'),
+          ('أول هداف في النهائي', config_scores.chaos_item ~ ' نقاط'),
+          ('أكثر المباريتين النصف نهائيتين أهدافًا', config_scores.chaos_item ~ ' نقاط'),
+          ('مجموع البطاقات الحمراء المتبقية', config_scores.chaos_item ~ ' نقاط'),
+        ] %}
+        <ul class="divide-y divide-black/5">
+          {% for label, pts in p3_rows %}
+          <li class="px-4 py-3 flex items-center justify-between gap-3">
+            <span class="text-sm font-bold text-ink-800 leading-tight">{{ label }}</span>
+            <span class="text-sm font-extrabold text-warm-600 tabular shrink-0">{{ pts }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── Golden rules ──────────────────────────────────────────────────── -->
+    <div class="bg-pitch-900 text-sand-50 rounded-2xl p-4 relative overflow-hidden">
+      <div class="absolute inset-x-0 bottom-0 h-12 pitch-stripes opacity-50"></div>
+      <div class="relative">
+        <div class="text-[10px] tracking-[0.25em] text-pitch-300 uppercase mb-3">القواعد الأساسية</div>
+        <ul class="space-y-3">
+          <li class="flex items-start gap-3 text-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-pitch-400 mt-1.5 shrink-0"></span>
+            <span>توقعات كل مرحلة <span class="font-bold text-sand-100">مخفية</span> — لا أحد يرى توقعات الآخرين إلا بعد الإغلاق.</span>
+          </li>
+          <li class="flex items-start gap-3 text-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-pitch-400 mt-1.5 shrink-0"></span>
+            <span>نقاطك <span class="font-bold text-sand-100">تتراكم</span> عبر المراحل الثلاث — رصيدك الكلي هو مجموع نقاط جميع المراحل.</span>
+          </li>
+          <li class="flex items-start gap-3 text-sm">
+            <span class="w-1.5 h-1.5 rounded-full bg-warm-400 mt-1.5 shrink-0"></span>
+            <span>المرحلة الثالثة مصممة للإثارة فقط ولا تتجاوز وزن المرحلتين السابقتين.</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

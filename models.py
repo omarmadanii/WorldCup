@@ -49,6 +49,12 @@ CREATE TABLE IF NOT EXISTS phase1_predictions (
     dark_horse   TEXT,
     wildcard     TEXT,
     wildcard_pts INTEGER DEFAULT 0,    -- admin-assigned wildcard bonus
+    dawha_ronaldo     TEXT,
+    dawha_bulga_goals INTEGER,
+    dawha_uncle       TEXT,
+    dawha_jeddah      TEXT,
+    dawha_car         TEXT,
+    dawha_pts         INTEGER DEFAULT 0,
     submitted_at TEXT DEFAULT (datetime('now')),
     updated_at   TEXT DEFAULT (datetime('now'))
 );
@@ -115,6 +121,21 @@ def init_db():
                 'INSERT OR IGNORE INTO phases (id, name, status) VALUES (?, ?, ?)',
                 (phase_id, name, 'pending')
             )
+
+        # Migrate existing DBs: add dawha columns if missing
+        for col_def in [
+            'dawha_ronaldo TEXT',
+            'dawha_bulga_goals INTEGER',
+            'dawha_uncle TEXT',
+            'dawha_jeddah TEXT',
+            'dawha_car TEXT',
+            'dawha_pts INTEGER DEFAULT 0',
+        ]:
+            try:
+                db.execute(f'ALTER TABLE phase1_predictions ADD COLUMN {col_def}')
+                db.commit()
+            except Exception:
+                pass  # column already exists
 
         # Seed admin user if not present
         existing = db.execute(
@@ -227,8 +248,9 @@ def get_phase1_prediction(user_id):
 
 def save_phase1_prediction(user_id, data: dict):
     """
-    data keys: group_picks (dict), total_goals, golden_boot,
-               golden_ball, dark_horse, wildcard
+    data keys: group_picks (dict), total_goals, golden_boot, golden_ball,
+               dark_horse, wildcard, dawha_ronaldo, dawha_bulga_goals,
+               dawha_uncle, dawha_jeddah, dawha_car
     """
     group_picks_json = json.dumps(data.get('group_picks', {}), ensure_ascii=False)
     now = datetime.utcnow().isoformat(timespec='seconds')
@@ -240,7 +262,9 @@ def save_phase1_prediction(user_id, data: dict):
             db.execute("""
                 UPDATE phase1_predictions
                 SET group_picks=?, total_goals=?, golden_boot=?,
-                    golden_ball=?, dark_horse=?, wildcard=?, updated_at=?
+                    golden_ball=?, dark_horse=?, wildcard=?,
+                    dawha_ronaldo=?, dawha_bulga_goals=?, dawha_uncle=?,
+                    dawha_jeddah=?, dawha_car=?, updated_at=?
                 WHERE user_id=?
             """, (group_picks_json,
                   data.get('total_goals'),
@@ -248,19 +272,31 @@ def save_phase1_prediction(user_id, data: dict):
                   data.get('golden_ball') or None,
                   data.get('dark_horse') or None,
                   data.get('wildcard') or None,
+                  data.get('dawha_ronaldo') or None,
+                  data.get('dawha_bulga_goals'),
+                  data.get('dawha_uncle') or None,
+                  data.get('dawha_jeddah') or None,
+                  data.get('dawha_car') or None,
                   now, user_id))
         else:
             db.execute("""
                 INSERT INTO phase1_predictions
                     (user_id, group_picks, total_goals, golden_boot,
-                     golden_ball, dark_horse, wildcard, submitted_at, updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?)
+                     golden_ball, dark_horse, wildcard,
+                     dawha_ronaldo, dawha_bulga_goals, dawha_uncle,
+                     dawha_jeddah, dawha_car, submitted_at, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (user_id, group_picks_json,
                   data.get('total_goals'),
                   data.get('golden_boot') or None,
                   data.get('golden_ball') or None,
                   data.get('dark_horse') or None,
                   data.get('wildcard') or None,
+                  data.get('dawha_ronaldo') or None,
+                  data.get('dawha_bulga_goals'),
+                  data.get('dawha_uncle') or None,
+                  data.get('dawha_jeddah') or None,
+                  data.get('dawha_car') or None,
                   now, now))
         db.commit()
 
@@ -269,6 +305,15 @@ def set_wildcard_pts(user_id, pts):
     with get_db() as db:
         db.execute(
             'UPDATE phase1_predictions SET wildcard_pts = ? WHERE user_id = ?',
+            (int(pts), user_id)
+        )
+        db.commit()
+
+
+def set_dawha_pts(user_id, pts):
+    with get_db() as db:
+        db.execute(
+            'UPDATE phase1_predictions SET dawha_pts = ? WHERE user_id = ?',
             (int(pts), user_id)
         )
         db.commit()
