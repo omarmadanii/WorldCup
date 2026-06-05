@@ -49,6 +49,11 @@ CREATE TABLE IF NOT EXISTS phase1_predictions (
     dark_horse   TEXT,
     wildcard     TEXT,
     wildcard_pts INTEGER DEFAULT 0,    -- admin-assigned wildcard bonus
+    champion_p1       TEXT,
+    golden_boot_2     TEXT,
+    golden_boot_3     TEXT,
+    golden_ball_2     TEXT,
+    golden_ball_3     TEXT,
     dawha_ronaldo     TEXT,
     dawha_bulga_goals INTEGER,
     dawha_uncle       TEXT,
@@ -73,6 +78,7 @@ CREATE TABLE IF NOT EXISTS phase2_predictions (
     final_away_goals INTEGER,
     penalties_count  INTEGER,
     golden_boot      TEXT,
+    dark_horse       TEXT,
     submitted_at     TEXT DEFAULT (datetime('now')),
     updated_at       TEXT DEFAULT (datetime('now'))
 );
@@ -83,10 +89,13 @@ CREATE TABLE IF NOT EXISTS phase3_predictions (
     user_id              INTEGER UNIQUE NOT NULL REFERENCES users(id),
     final_to_penalties   INTEGER,   -- 1=yes 0=no
     first_scorer         TEXT,
-    more_goals_semi      TEXT,      -- 'semi1' | 'semi2'
+    more_goals_semi      TEXT,
     exact_final_home     INTEGER,
     exact_final_away     INTEGER,
     red_cards_remaining  INTEGER,
+    final_goals          INTEGER,   -- total goals in the final
+    red_card_final       INTEGER,   -- 1=yes 0=no
+    mom_final            TEXT,      -- man of the match
     submitted_at         TEXT DEFAULT (datetime('now')),
     updated_at           TEXT DEFAULT (datetime('now'))
 );
@@ -122,8 +131,29 @@ def init_db():
                 (phase_id, name, 'pending')
             )
 
-        # Migrate existing DBs: add dawha columns if missing
+        # Migrate phase2_predictions
+        for col_def in ['dark_horse TEXT']:
+            try:
+                db.execute(f'ALTER TABLE phase2_predictions ADD COLUMN {col_def}')
+                db.commit()
+            except Exception:
+                pass
+
+        # Migrate phase3_predictions
+        for col_def in ['final_goals INTEGER', 'red_card_final INTEGER', 'mom_final TEXT']:
+            try:
+                db.execute(f'ALTER TABLE phase3_predictions ADD COLUMN {col_def}')
+                db.commit()
+            except Exception:
+                pass
+
+        # Migrate existing DBs: add new columns if missing
         for col_def in [
+            'champion_p1 TEXT',
+            'golden_boot_2 TEXT',
+            'golden_boot_3 TEXT',
+            'golden_ball_2 TEXT',
+            'golden_ball_3 TEXT',
             'dawha_ronaldo TEXT',
             'dawha_bulga_goals INTEGER',
             'dawha_uncle TEXT',
@@ -247,11 +277,6 @@ def get_phase1_prediction(user_id):
 
 
 def save_phase1_prediction(user_id, data: dict):
-    """
-    data keys: group_picks (dict), total_goals, golden_boot, golden_ball,
-               dark_horse, wildcard, dawha_ronaldo, dawha_bulga_goals,
-               dawha_uncle, dawha_jeddah, dawha_car
-    """
     group_picks_json = json.dumps(data.get('group_picks', {}), ensure_ascii=False)
     now = datetime.utcnow().isoformat(timespec='seconds')
     with get_db() as db:
@@ -262,16 +287,23 @@ def save_phase1_prediction(user_id, data: dict):
             db.execute("""
                 UPDATE phase1_predictions
                 SET group_picks=?, total_goals=?, golden_boot=?,
-                    golden_ball=?, dark_horse=?, wildcard=?,
+                    golden_boot_2=?, golden_boot_3=?,
+                    golden_ball=?, golden_ball_2=?, golden_ball_3=?,
+                    dark_horse=?, wildcard=?, champion_p1=?,
                     dawha_ronaldo=?, dawha_bulga_goals=?, dawha_uncle=?,
                     dawha_jeddah=?, dawha_car=?, updated_at=?
                 WHERE user_id=?
             """, (group_picks_json,
                   data.get('total_goals'),
                   data.get('golden_boot') or None,
+                  data.get('golden_boot_2') or None,
+                  data.get('golden_boot_3') or None,
                   data.get('golden_ball') or None,
+                  data.get('golden_ball_2') or None,
+                  data.get('golden_ball_3') or None,
                   data.get('dark_horse') or None,
                   data.get('wildcard') or None,
+                  data.get('champion_p1') or None,
                   data.get('dawha_ronaldo') or None,
                   data.get('dawha_bulga_goals'),
                   data.get('dawha_uncle') or None,
@@ -282,16 +314,23 @@ def save_phase1_prediction(user_id, data: dict):
             db.execute("""
                 INSERT INTO phase1_predictions
                     (user_id, group_picks, total_goals, golden_boot,
-                     golden_ball, dark_horse, wildcard,
+                     golden_boot_2, golden_boot_3,
+                     golden_ball, golden_ball_2, golden_ball_3,
+                     dark_horse, wildcard, champion_p1,
                      dawha_ronaldo, dawha_bulga_goals, dawha_uncle,
                      dawha_jeddah, dawha_car, submitted_at, updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             """, (user_id, group_picks_json,
                   data.get('total_goals'),
                   data.get('golden_boot') or None,
+                  data.get('golden_boot_2') or None,
+                  data.get('golden_boot_3') or None,
                   data.get('golden_ball') or None,
+                  data.get('golden_ball_2') or None,
+                  data.get('golden_ball_3') or None,
                   data.get('dark_horse') or None,
                   data.get('wildcard') or None,
+                  data.get('champion_p1') or None,
                   data.get('dawha_ronaldo') or None,
                   data.get('dawha_bulga_goals'),
                   data.get('dawha_uncle') or None,
@@ -308,6 +347,19 @@ def set_wildcard_pts(user_id, pts):
             (int(pts), user_id)
         )
         db.commit()
+
+
+def get_phase2_fixtures():
+    """Return list of 16 R32 fixtures [{match_num, home, away}] from results table."""
+    results = get_all_results()
+    return [
+        {
+            'match_num': i,
+            'home': results.get(f'p2_fixture_{i}_home') or '',
+            'away': results.get(f'p2_fixture_{i}_away') or '',
+        }
+        for i in range(1, 17)
+    ]
 
 
 def set_dawha_pts(user_id, pts):
@@ -354,8 +406,7 @@ def save_phase2_prediction(user_id, data: dict):
                 UPDATE phase2_predictions
                 SET r32_winners=?, quarterfinalists=?, semifinalists=?,
                     finalists=?, champion=?, final_home_goals=?,
-                    final_away_goals=?, penalties_count=?, golden_boot=?,
-                    updated_at=?
+                    final_away_goals=?, dark_horse=?, updated_at=?
                 WHERE user_id=?
             """, (jdump(data.get('r32_winners')),
                   jdump(data.get('quarterfinalists')),
@@ -364,16 +415,15 @@ def save_phase2_prediction(user_id, data: dict):
                   data.get('champion') or None,
                   data.get('final_home_goals'),
                   data.get('final_away_goals'),
-                  data.get('penalties_count'),
-                  data.get('golden_boot') or None,
+                  data.get('dark_horse') or None,
                   now, user_id))
         else:
             db.execute("""
                 INSERT INTO phase2_predictions
                     (user_id, r32_winners, quarterfinalists, semifinalists,
                      finalists, champion, final_home_goals, final_away_goals,
-                     penalties_count, golden_boot, submitted_at, updated_at)
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+                     dark_horse, submitted_at, updated_at)
+                VALUES (?,?,?,?,?,?,?,?,?,?,?)
             """, (user_id,
                   jdump(data.get('r32_winners')),
                   jdump(data.get('quarterfinalists')),
@@ -382,8 +432,7 @@ def save_phase2_prediction(user_id, data: dict):
                   data.get('champion') or None,
                   data.get('final_home_goals'),
                   data.get('final_away_goals'),
-                  data.get('penalties_count'),
-                  data.get('golden_boot') or None,
+                  data.get('dark_horse') or None,
                   now, now))
         db.commit()
 
@@ -405,7 +454,8 @@ def save_phase3_prediction(user_id, data: dict):
             'SELECT id FROM phase3_predictions WHERE user_id = ?', (user_id,)
         ).fetchone()
         fields = ('final_to_penalties', 'first_scorer', 'more_goals_semi',
-                  'exact_final_home', 'exact_final_away', 'red_cards_remaining')
+                  'exact_final_home', 'exact_final_away', 'red_cards_remaining',
+                  'final_goals', 'red_card_final', 'mom_final')
         vals = tuple(data.get(f) or None for f in fields)
         if existing:
             set_clause = ', '.join(f'{f}=?' for f in fields) + ', updated_at=?'
@@ -481,9 +531,10 @@ def get_recent_activity(limit=8):
 
 def phase1_completion(pred, groups):
     """Return (filled_count, total_required, pct) for the progress ring."""
+    # required: winner+runner per group + golden_boot + total_goals + champion_p1
+    total = len(groups) * 2 + 3
     if not pred:
-        return 0, len(groups) * 2 + 2, 0
-    total = len(groups) * 2 + 2   # winner+runner per group + golden_boot + total_goals
+        return 0, total, 0
     filled = 0
     gp = pred.get('group_picks', {})
     for g in groups:
@@ -494,6 +545,8 @@ def phase1_completion(pred, groups):
     if pred.get('golden_boot'):
         filled += 1
     if pred.get('total_goals') is not None:
+        filled += 1
+    if pred.get('champion_p1'):
         filled += 1
     pct = round(filled / total * 100) if total else 0
     return filled, total, pct

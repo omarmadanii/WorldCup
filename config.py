@@ -69,8 +69,13 @@ SCORES = {
     'total_goals_exact':   10,
     'total_goals_near':     5,   # within ±5 of actual
     'total_goals_near_range': 5,
-    'golden_boot_p1':      10,
-    'golden_ball':         10,
+    'champion_p1':         15,   # champion predicted in phase 1
+    'golden_boot_p1':      10,   # choice 1 correct
+    'golden_boot_p1_2':     7,   # choice 2 correct
+    'golden_boot_p1_3':     5,   # choice 3 correct
+    'golden_ball':         10,   # choice 1 correct
+    'golden_ball_2':        7,   # choice 2 correct
+    'golden_ball_3':        5,   # choice 3 correct
     'r32_winner':           3,
     'quarterfinalist':      5,
     'semifinalist':         8,
@@ -79,7 +84,7 @@ SCORES = {
     'exact_final_score':   10,
     'penalty_count':        8,
     'golden_boot_p2':      10,
-    'chaos_item':           5,
+    'chaos_item':           2,   # penalties + first scorer
 }
 
 # ── Phase names (Arabic display strings) ──────────────────────────────────

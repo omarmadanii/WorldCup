@@ -79,7 +79,7 @@
           </div>
         </label>
       </div>
-      <div class="mt-2 text-[11px] text-ink-500">5 نقاط</div>
+      <div class="mt-2 text-[11px] text-ink-500">2 نقاط</div>
     </div>
 
     <!-- Q2: First scorer in the final -->
@@ -95,59 +95,76 @@
         class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
                outline-none focus:ring-2 focus:ring-pitch-500
                {{ 'opacity-60' if phase.status in ('locked','pending') }}" />
-      <div class="mt-2 text-[11px] text-ink-500">5 نقاط</div>
+      <div class="mt-2 text-[11px] text-ink-500">2 نقاط</div>
     </div>
 
-    <!-- Q3: Which semifinal has more goals? -->
+
+    <!-- Q3: Total goals in the final -->
     <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
       <div class="flex items-center gap-2 mb-3">
         <span class="font-display text-2xl text-warm-500 tabular">3</span>
-        <h3 class="font-extrabold text-base">أيّ نصف نهائي سيشهد أكثر أهدافًا؟</h3>
+        <h3 class="font-extrabold text-base">كم هدف يُسجَّل في النهائي؟</h3>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        {% set mgs = pred.more_goals_semi if pred else None %}
-        <label class="cursor-pointer">
-          <input type="radio" name="more_goals_semi" value="semi1"
-            {{ 'checked' if mgs == 'semi1' }}
-            {{ 'disabled' if phase.status in ('locked','pending') }}
-            class="sr-only peer" />
-          <div class="h-12 rounded-xl border-2 border-sand-300 font-bold text-sm
-                      text-center leading-[3rem]
-                      peer-checked:bg-pitch-700 peer-checked:text-white peer-checked:border-pitch-700
-                      {{ 'opacity-60' if phase.status in ('locked','pending') }}">
-            نصف النهائي 1
-          </div>
-        </label>
-        <label class="cursor-pointer">
-          <input type="radio" name="more_goals_semi" value="semi2"
-            {{ 'checked' if mgs == 'semi2' }}
-            {{ 'disabled' if phase.status in ('locked','pending') }}
-            class="sr-only peer" />
-          <div class="h-12 rounded-xl border-2 border-sand-300 font-bold text-sm
-                      text-center leading-[3rem]
-                      peer-checked:bg-pitch-700 peer-checked:text-white peer-checked:border-pitch-700
-                      {{ 'opacity-60' if phase.status in ('locked','pending') }}">
-            نصف النهائي 2
-          </div>
-        </label>
-      </div>
-      <div class="mt-2 text-[11px] text-ink-500">5 نقاط</div>
-    </div>
-
-    <!-- Q4: Red cards remaining -->
-    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <span class="font-display text-2xl text-warm-500 tabular">4</span>
-        <h3 class="font-extrabold text-base">كم بطاقة حمراء ستُرى حتى نهاية البطولة؟</h3>
-      </div>
-      <input type="number" name="red_cards_remaining" min="0" max="50"
-        value="{{ pred.red_cards_remaining if pred and pred.red_cards_remaining is not none else '' }}"
+      <input type="number" name="final_goals" min="0" max="20"
+        value="{{ pred.final_goals if pred and pred.final_goals is not none else '' }}"
         {{ 'disabled' if phase.status in ('locked','pending') }}
         placeholder="0"
         class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
                outline-none focus:ring-2 focus:ring-pitch-500
                {{ 'opacity-60' if phase.status in ('locked','pending') }}" />
-      <div class="mt-2 text-[11px] text-ink-500">5 نقاط</div>
+      <div class="mt-2 text-[11px] text-ink-500">2 نقاط</div>
+    </div>
+
+    <!-- Q4: Red card in the final -->
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-display text-2xl text-warm-500 tabular">4</span>
+        <h3 class="font-extrabold text-base">هل تظهر بطاقة حمراء في النهائي؟</h3>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        {% set rcf = pred.red_card_final if pred else None %}
+        <label class="cursor-pointer">
+          <input type="radio" name="red_card_final" value="1"
+            {{ 'checked' if rcf == 1 }}
+            {{ 'disabled' if phase.status in ('locked','pending') }}
+            class="sr-only peer" />
+          <div class="h-12 rounded-xl border-2 border-sand-300 font-bold text-sm
+                      text-center leading-[3rem]
+                      peer-checked:bg-pitch-700 peer-checked:text-white peer-checked:border-pitch-700
+                      {{ 'opacity-60' if phase.status in ('locked','pending') }}">
+            نعم
+          </div>
+        </label>
+        <label class="cursor-pointer">
+          <input type="radio" name="red_card_final" value="0"
+            {{ 'checked' if rcf == 0 }}
+            {{ 'disabled' if phase.status in ('locked','pending') }}
+            class="sr-only peer" />
+          <div class="h-12 rounded-xl border-2 border-sand-300 font-bold text-sm
+                      text-center leading-[3rem]
+                      peer-checked:bg-pitch-700 peer-checked:text-white peer-checked:border-pitch-700
+                      {{ 'opacity-60' if phase.status in ('locked','pending') }}">
+            لا
+          </div>
+        </label>
+      </div>
+      <div class="mt-2 text-[11px] text-ink-500">2 نقاط</div>
+    </div>
+
+    <!-- Q5: Man of the match -->
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="font-display text-2xl text-warm-500 tabular">5</span>
+        <h3 class="font-extrabold text-base">من يفوز بجائزة أفضل لاعب في النهائي؟</h3>
+      </div>
+      <input type="text" name="mom_final" list="all-players" maxlength="60"
+        value="{{ pred.mom_final if pred and pred.mom_final else '' }}"
+        {{ 'disabled' if phase.status in ('locked','pending') }}
+        placeholder="اسم اللاعب"
+        class="w-full h-12 bg-sand-100 rounded-xl px-3 font-bold text-sm
+               outline-none focus:ring-2 focus:ring-pitch-500
+               {{ 'opacity-60' if phase.status in ('locked','pending') }}" />
+      <div class="mt-2 text-[11px] text-ink-500">2 نقاط</div>
     </div>
 
     {% if phase.status == 'open' %}

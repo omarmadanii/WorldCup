@@ -59,20 +59,35 @@ def compute_phase1_score(user_id, results: dict) -> int:
         elif diff <= SCORES['total_goals_near_range']:
             score += SCORES['total_goals_near']
 
-    # Golden Boot
+    # Champion (predicted in Phase 1)
+    real_champ_p1 = results.get('p1_champion')
+    if real_champ_p1 and pred.get('champion_p1') == real_champ_p1:
+        score += SCORES['champion_p1']
+
+    # Golden Boot — 3 ranked choices (10 / 7 / 5)
     real_boot = results.get('p1_golden_boot')
-    if real_boot and pred.get('golden_boot') == real_boot:
-        score += SCORES['golden_boot_p1']
+    if real_boot:
+        for choice, pts_key in [
+            (pred.get('golden_boot'),   'golden_boot_p1'),
+            (pred.get('golden_boot_2'), 'golden_boot_p1_2'),
+            (pred.get('golden_boot_3'), 'golden_boot_p1_3'),
+        ]:
+            if choice and choice.strip() == real_boot.strip():
+                score += SCORES[pts_key]
+                break
 
-    # Golden Ball
+    # Golden Ball — 3 ranked choices (10 / 7 / 5)
     real_ball = results.get('p1_golden_ball')
-    if real_ball and pred.get('golden_ball') == real_ball:
-        score += SCORES['golden_ball']
+    if real_ball:
+        for choice, pts_key in [
+            (pred.get('golden_ball'),   'golden_ball'),
+            (pred.get('golden_ball_2'), 'golden_ball_2'),
+            (pred.get('golden_ball_3'), 'golden_ball_3'),
+        ]:
+            if choice and choice.strip() == real_ball.strip():
+                score += SCORES[pts_key]
+                break
 
-    # Dark horse
-    real_dark = results.get('p1_dark_horse')
-    if real_dark and pred.get('dark_horse') == real_dark:
-        score += SCORES['dark_horse']
 
     # Wildcard (admin-assigned points stored directly on the prediction row)
     score += int(pred.get('wildcard_pts') or 0)
@@ -119,7 +134,12 @@ def compute_phase2_score(user_id, results: dict) -> int:
     if real_champ and pred.get('champion') == real_champ:
         score += SCORES['champion']
 
-    # Exact final score (+25)
+    # Dark horse (reaches QF minimum — moved from Phase 1)
+    real_dark = results.get('p2_dark_horse')
+    if real_dark and pred.get('dark_horse') == real_dark:
+        score += SCORES['dark_horse']
+
+    # Exact final score
     r_home = _int_or_none(results.get('p2_final_home'))
     r_away = _int_or_none(results.get('p2_final_away'))
     p_home = _int_or_none(pred.get('final_home_goals'))
@@ -127,17 +147,6 @@ def compute_phase2_score(user_id, results: dict) -> int:
     if None not in (r_home, r_away, p_home, p_away):
         if r_home == p_home and r_away == p_away:
             score += SCORES['exact_final_score']
-
-    # Penalty count (+8)
-    r_pen = _int_or_none(results.get('p2_penalties_count'))
-    p_pen = _int_or_none(pred.get('penalties_count'))
-    if r_pen is not None and r_pen == p_pen:
-        score += SCORES['penalty_count']
-
-    # Golden Boot phase 2 (+10)
-    r_boot2 = results.get('p2_golden_boot')
-    if r_boot2 and pred.get('golden_boot') == r_boot2:
-        score += SCORES['golden_boot_p2']
 
     return score
 
@@ -161,16 +170,23 @@ def compute_phase3_score(user_id, results: dict) -> int:
     if r_scorer and pred.get('first_scorer') == r_scorer:
         score += S
 
-    # Which semifinal has more goals?
-    r_semi = results.get('p3_more_goals_semi')
-    if r_semi and pred.get('more_goals_semi') == r_semi:
+    # Total goals in the final
+    r_fg = _int_or_none(results.get('p3_final_goals'))
+    p_fg = _int_or_none(pred.get('final_goals'))
+    if r_fg is not None and r_fg == p_fg:
         score += S
 
-    # Total red cards remaining
-    r_rc = _int_or_none(results.get('p3_red_cards_remaining'))
-    p_rc = _int_or_none(pred.get('red_cards_remaining'))
-    if r_rc is not None and r_rc == p_rc:
-        score += S
+    # Red card in the final
+    r_rc = results.get('p3_red_card_final')
+    if r_rc is not None and pred.get('red_card_final') is not None:
+        if int(pred['red_card_final']) == int(r_rc):
+            score += S
+
+    # Man of the match
+    r_mom = results.get('p3_mom_final')
+    if r_mom and pred.get('mom_final'):
+        if pred['mom_final'].strip() == r_mom.strip():
+            score += S
 
     return score
 

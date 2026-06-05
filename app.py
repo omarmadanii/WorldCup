@@ -170,12 +170,12 @@ def _phase1_missing(pred):
     if not pred:
         return 'لم تُقدّم توقعاتك بعد'
     missing = []
+    if not pred.get('champion_p1'):
+        missing.append('البطل')
     if not pred.get('golden_boot'):
         missing.append('الهداف')
     if pred.get('total_goals') is None:
         missing.append('مجموع الأهداف')
-    if not pred.get('dark_horse'):
-        missing.append('الحصان الأسود')
     return ' · '.join(missing) if missing else ''
 
 
@@ -208,18 +208,25 @@ def predict_phase1():
             except (ValueError, TypeError):
                 return None
 
+        def _txt(key):
+            return request.form.get(key, '').strip() or None
+
         data = {
             'group_picks':       group_picks,
             'total_goals':       _int_field('total_goals'),
-            'golden_boot':       request.form.get('golden_boot', '').strip() or None,
-            'golden_ball':       request.form.get('golden_ball', '').strip() or None,
-            'dark_horse':        request.form.get('dark_horse', '').strip() or None,
-            'wildcard':          request.form.get('wildcard', '').strip() or None,
-            'dawha_ronaldo':     request.form.get('dawha_ronaldo', '').strip() or None,
+            'champion_p1':       _txt('champion_p1'),
+            'golden_boot':       _txt('golden_boot'),
+            'golden_boot_2':     _txt('golden_boot_2'),
+            'golden_boot_3':     _txt('golden_boot_3'),
+            'golden_ball':       _txt('golden_ball'),
+            'golden_ball_2':     _txt('golden_ball_2'),
+            'golden_ball_3':     _txt('golden_ball_3'),
+            'wildcard':          _txt('wildcard'),
+            'dawha_ronaldo':     _txt('dawha_ronaldo'),
             'dawha_bulga_goals': _int_field('dawha_bulga_goals'),
-            'dawha_uncle':       request.form.get('dawha_uncle', '').strip() or None,
-            'dawha_jeddah':      request.form.get('dawha_jeddah', '').strip() or None,
-            'dawha_car':         request.form.get('dawha_car', '').strip() or None,
+            'dawha_uncle':       _txt('dawha_uncle'),
+            'dawha_jeddah':      _txt('dawha_jeddah'),
+            'dawha_car':         _txt('dawha_car'),
         }
         models.save_phase1_prediction(uid, data)
         flash('تم حفظ توقعاتك بنجاح!', 'success')
@@ -274,8 +281,7 @@ def predict_phase2():
             'champion':         request.form.get('champion', '').strip() or None,
             'final_home_goals': _int('final_home_goals'),
             'final_away_goals': _int('final_away_goals'),
-            'penalties_count':  _int('penalties_count'),
-            'golden_boot':      request.form.get('golden_boot', '').strip() or None,
+            'dark_horse':       request.form.get('dark_horse', '').strip() or None,
         }
         models.save_phase2_prediction(uid, data)
         flash('تم حفظ توقعاتك بنجاح!', 'success')
@@ -283,12 +289,14 @@ def predict_phase2():
 
     pred = models.get_phase2_prediction(uid)
     deadline_iso, _ = _deadline_display(phase)
+    fixtures = models.get_phase2_fixtures()
 
     return render_template(
         'predict_phase2.html',
         active_tab='predict',
         phase=phase,
         deadline_iso=deadline_iso,
+        fixtures=fixtures,
         teams=ALL_TEAMS,
         players=TOP_PLAYERS,
         pred=pred,
@@ -311,17 +319,21 @@ def predict_phase3():
         ftp_raw = request.form.get('final_to_penalties', '')
         ftp = 1 if ftp_raw == '1' else (0 if ftp_raw == '0' else None)
 
-        def _int(key):
+        def _int3(key):
             try:
                 return int(request.form.get(key, ''))
             except (ValueError, TypeError):
                 return None
 
+        rc_raw = request.form.get('red_card_final', '')
+        red_card_final = 1 if rc_raw == '1' else (0 if rc_raw == '0' else None)
+
         data = {
-            'final_to_penalties':  ftp,
-            'first_scorer':        request.form.get('first_scorer', '').strip() or None,
-            'more_goals_semi':     request.form.get('more_goals_semi', '').strip() or None,
-            'red_cards_remaining': _int('red_cards_remaining'),
+            'final_to_penalties': ftp,
+            'first_scorer':       request.form.get('first_scorer', '').strip() or None,
+            'final_goals':        _int3('final_goals'),
+            'red_card_final':     red_card_final,
+            'mom_final':          request.form.get('mom_final', '').strip() or None,
         }
         models.save_phase3_prediction(uid, data)
         flash('تم حفظ توقعاتك بنجاح!', 'success')
@@ -413,6 +425,15 @@ def admin_players():
         p1 = models.get_phase1_prediction(u['id'])
         player_data.append({
             'user': dict(u),
+            # Phase 1 key predictions (read-only, auto-scored)
+            'champion_p1':   p1.get('champion_p1') if p1 else None,
+            'golden_boot':   p1.get('golden_boot') if p1 else None,
+            'golden_boot_2': p1.get('golden_boot_2') if p1 else None,
+            'golden_boot_3': p1.get('golden_boot_3') if p1 else None,
+            'golden_ball':   p1.get('golden_ball') if p1 else None,
+            'golden_ball_2': p1.get('golden_ball_2') if p1 else None,
+            'golden_ball_3': p1.get('golden_ball_3') if p1 else None,
+            # Wildcard + dawha (admin-scored)
             'wildcard': p1.get('wildcard') if p1 else None,
             'wildcard_pts': p1.get('wildcard_pts', 0) if p1 else 0,
             'dawha_ronaldo':     p1.get('dawha_ronaldo') if p1 else None,
@@ -465,7 +486,7 @@ def admin_results():
                 if r:
                     models.set_result(f'p1_group_{letter.lower()}_runner', r)
 
-            for key in ('p1_total_goals', 'p1_golden_boot', 'p1_golden_ball', 'p1_dark_horse'):
+            for key in ('p1_total_goals', 'p1_golden_boot', 'p1_golden_ball', 'p1_champion'):
                 v = request.form.get(key, '').strip()
                 if v:
                     models.set_result(key, v)
@@ -473,6 +494,18 @@ def admin_results():
             scoring.snapshot_and_refresh()
             models.add_activity('تم تحديث نتائج دور المجموعات', category='result')
             flash('تم حفظ نتائج المرحلة الأولى.', 'success')
+
+        # Save Phase 2 R32 fixtures
+        elif action == 'save_p2_fixtures':
+            for i in range(1, 17):
+                home = request.form.get(f'fixture_{i}_home', '').strip()
+                away = request.form.get(f'fixture_{i}_away', '').strip()
+                if home:
+                    models.set_result(f'p2_fixture_{i}_home', home)
+                if away:
+                    models.set_result(f'p2_fixture_{i}_away', away)
+            flash('تم حفظ مباريات دور الـ32.', 'success')
+            models.add_activity('تم إدخال مباريات دور الـ32', category='info')
 
         # Save Phase 2 results
         elif action == 'save_p2':
@@ -485,12 +518,12 @@ def admin_results():
             models.set_result('p2_semifinalists',     _list_from_textarea('p2_semifinalists'))
             models.set_result('p2_finalists',         _list_from_textarea('p2_finalists'))
 
-            for key in ('p2_champion', 'p2_golden_boot'):
+            for key in ('p2_champion', 'p2_dark_horse'):
                 v = request.form.get(key, '').strip()
                 if v:
                     models.set_result(key, v)
 
-            for key in ('p2_final_home', 'p2_final_away', 'p2_penalties_count'):
+            for key in ('p2_final_home', 'p2_final_away'):
                 v = request.form.get(key, '').strip()
                 if v:
                     try:
@@ -508,18 +541,21 @@ def admin_results():
             if ftp in ('0', '1'):
                 models.set_result('p3_final_to_penalties', int(ftp))
 
-            for key in ('p3_first_scorer', 'p3_more_goals_semi'):
+            for key in ('p3_first_scorer', 'p3_mom_final'):
                 v = request.form.get(key, '').strip()
                 if v:
                     models.set_result(key, v)
 
-            for key in ('p3_exact_final_home', 'p3_exact_final_away', 'p3_red_cards_remaining'):
-                v = request.form.get(key, '').strip()
-                if v:
-                    try:
-                        models.set_result(key, int(v))
-                    except ValueError:
-                        pass
+            ftp3 = request.form.get('p3_red_card_final', '')
+            if ftp3 in ('0', '1'):
+                models.set_result('p3_red_card_final', int(ftp3))
+
+            v = request.form.get('p3_final_goals', '').strip()
+            if v:
+                try:
+                    models.set_result('p3_final_goals', int(v))
+                except ValueError:
+                    pass
 
             scoring.snapshot_and_refresh()
             models.add_activity('تم تحديث نتائج جولة الفوضى', category='result')
@@ -534,6 +570,7 @@ def admin_results():
     results  = models.get_all_results()
     activity = models.get_recent_activity(10)
     groups   = list('ABCDEFGHIJKL')
+    fixtures = models.get_phase2_fixtures()
 
     return render_template(
         'admin/results.html',
@@ -545,6 +582,7 @@ def admin_results():
         teams=ALL_TEAMS,
         players=TOP_PLAYERS,
         groups_dict=WC_GROUPS,
+        fixtures=fixtures,
     )
 
 

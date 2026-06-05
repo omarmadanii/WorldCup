@@ -61,9 +61,13 @@
           ('الحد الأقصى من كل مجموعة', '4 نقاط (منتخبَيْن × 2)'),
           ('مجموع أهداف البطولة — إصابة تامة', config_scores.total_goals_exact ~ ' نقاط'),
           ('مجموع أهداف البطولة — فارق ±5 أهداف', config_scores.total_goals_near ~ ' نقاط'),
-          ('الحذاء الذهبي', config_scores.golden_boot_p1 ~ ' نقاط'),
-          ('الكرة الذهبية', config_scores.golden_ball ~ ' نقاط'),
-          ('الحصان الأسود', config_scores.dark_horse ~ ' نقاط'),
+          ('بطل البطولة (توقّع مبكر)', config_scores.champion_p1 ~ ' نقطة'),
+          ('الحذاء الذهبي — الخيار الأول', config_scores.golden_boot_p1 ~ ' نقاط'),
+          ('الحذاء الذهبي — الخيار الثاني', config_scores.golden_boot_p1_2 ~ ' نقاط'),
+          ('الحذاء الذهبي — الخيار الثالث', config_scores.golden_boot_p1_3 ~ ' نقاط'),
+          ('الكرة الذهبية — الخيار الأول', config_scores.golden_ball ~ ' نقاط'),
+          ('الكرة الذهبية — الخيار الثاني', config_scores.golden_ball_2 ~ ' نقاط'),
+          ('الكرة الذهبية — الخيار الثالث', config_scores.golden_ball_3 ~ ' نقاط'),
           ('الرابحة', 'يحددها المسؤول'),
           ('اختبار الدهاء (5 أسئلة)', '1 نقطة لكل سؤال'),
         ] %}
@@ -100,10 +104,9 @@
           ('المتأهل لربع النهائي (كل منتخب)', config_scores.quarterfinalist ~ ' نقاط'),
           ('المتأهل لنصف النهائي (كل منتخب)', config_scores.semifinalist ~ ' نقاط'),
           ('المتأهل للنهائي (كل منتخب)', config_scores.finalist ~ ' نقاط'),
+          ('الحصان الأسود (يصل ربع النهائي)', config_scores.dark_horse ~ ' نقاط'),
           ('البطل', config_scores.champion ~ ' نقاط'),
-          ('نتيجة النهائي بالضبط', config_scores.exact_final_score ~ ' نقاط'),
-          ('عدد مباريات الترجيح في الإقصائيات', config_scores.penalty_count ~ ' نقاط'),
-          ('الحذاء الذهبي', config_scores.golden_boot_p2 ~ ' نقاط'),
+          ('نتيجة النهائي الدقيقة', config_scores.exact_final_score ~ ' نقاط'),
         ] %}
         <ul class="divide-y divide-black/5">
           {% for label, pts in p2_rows %}
@@ -126,7 +129,7 @@
           <h3 class="font-extrabold text-base leading-tight">جولة الفوضى</h3>
         </div>
       </div>
-      <p class="text-xs text-ink-500 mb-3 mr-12">تُفتح قُرب نهاية البطولة. نافذة قصيرة، توقعات سريعة.</p>
+      <p class="text-xs text-ink-500 mb-3 mr-12">تُفتح بعد انتهاء نصف النهائي. نافذة قصيرة، 5 أسئلة حول مباراة النهائي.</p>
 
       <div class="bg-white rounded-2xl ring-1 ring-black/5 overflow-hidden">
         <div class="px-4 py-2 bg-pitch-900/5 border-b border-black/5
@@ -136,8 +139,9 @@
         {% set p3_rows = [
           ('هل يذهب النهائي إلى الترجيح؟', config_scores.chaos_item ~ ' نقاط'),
           ('أول هداف في النهائي', config_scores.chaos_item ~ ' نقاط'),
-          ('أكثر المباريتين النصف نهائيتين أهدافًا', config_scores.chaos_item ~ ' نقاط'),
-          ('مجموع البطاقات الحمراء المتبقية', config_scores.chaos_item ~ ' نقاط'),
+          ('كم هدف يُسجَّل في النهائي؟', config_scores.chaos_item ~ ' نقاط'),
+          ('هل تظهر بطاقة حمراء في النهائي؟', config_scores.chaos_item ~ ' نقاط'),
+          ('أفضل لاعب في النهائي (مان أوف ذا ماتش)', config_scores.chaos_item ~ ' نقاط'),
         ] %}
         <ul class="divide-y divide-black/5">
           {% for label, pts in p3_rows %}

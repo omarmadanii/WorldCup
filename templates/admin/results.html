@@ -137,42 +137,67 @@
           </label>
           <label class="block">
             <span class="block text-[11px] font-bold text-ink-700 mb-1">الهداف</span>
-            <select name="p1_golden_boot"
+            <input type="text" name="p1_golden_boot" maxlength="60"
+              value="{{ results.get('p1_golden_boot', '') }}"
+              placeholder="اسم اللاعب"
               class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              {% for p in players %}
-              <option value="{{ p }}" {{ 'selected' if results.get('p1_golden_boot') == p }}>{{ p }}</option>
-              {% endfor %}
-            </select>
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
           <label class="block">
             <span class="block text-[11px] font-bold text-ink-700 mb-1">أفضل لاعب</span>
-            <select name="p1_golden_ball"
+            <input type="text" name="p1_golden_ball" maxlength="60"
+              value="{{ results.get('p1_golden_ball', '') }}"
+              placeholder="اسم اللاعب"
               class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              {% for p in players %}
-              <option value="{{ p }}" {{ 'selected' if results.get('p1_golden_ball') == p }}>{{ p }}</option>
-              {% endfor %}
-            </select>
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
-          <label class="block">
-            <span class="block text-[11px] font-bold text-ink-700 mb-1">الحصان الأسود</span>
-            <select name="p1_dark_horse"
+          <label class="block col-span-2">
+            <span class="block text-[11px] font-bold text-ink-700 mb-1">بطل البطولة (المرحلة 1)</span>
+            <input type="text" name="p1_champion" maxlength="60"
+              value="{{ results.get('p1_champion', '') }}"
+              placeholder="اسم المنتخب"
               class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              {% for t in teams %}
-              <option value="{{ t }}" {{ 'selected' if results.get('p1_dark_horse') == t }}>{{ t }}</option>
-              {% endfor %}
-            </select>
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
         </div>
 
         <button type="submit"
           class="w-full h-12 rounded-xl bg-pitch-700 text-white font-bold text-sm">
           حفظ نتائج المرحلة 1
+        </button>
+      </form>
+    </div>
+
+    <!-- ── Phase 2 fixtures (R32 matchups) ──────────────────────────────── -->
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="w-1.5 h-5 bg-warm-500 rounded-full"></span>
+        <h3 class="font-extrabold text-lg">جدول دور الـ32</h3>
+      </div>
+      <p class="text-xs text-ink-500 mb-3">أدخل الفريقَيْن المتقابلَيْن في كل مباراة (16 مباراة). يجب تعبئتها قبل فتح المرحلة الثانية.</p>
+      <form method="POST" action="{{ url_for('admin_results') }}"
+            class="bg-white rounded-2xl ring-1 ring-black/5 p-4 space-y-2">
+        <input type="hidden" name="action" value="save_p2_fixtures" />
+        <datalist id="teams-dl">
+          {% for t in teams %}<option value="{{ t }}">{% endfor %}
+        </datalist>
+        {% for f in fixtures %}
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-bold text-ink-400 w-6 text-center shrink-0">{{ f.match_num }}</span>
+          <input type="text" name="fixture_{{ f.match_num }}_home" list="teams-dl"
+            value="{{ f.home }}" placeholder="الفريق 1"
+            class="flex-1 h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
+                   outline-none focus:ring-2 focus:ring-pitch-500" />
+          <span class="text-xs text-ink-400 font-bold shrink-0">ضد</span>
+          <input type="text" name="fixture_{{ f.match_num }}_away" list="teams-dl"
+            value="{{ f.away }}" placeholder="الفريق 2"
+            class="flex-1 h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
+                   outline-none focus:ring-2 focus:ring-pitch-500" />
+        </div>
+        {% endfor %}
+        <button type="submit"
+          class="w-full h-12 rounded-xl bg-pitch-700 text-white font-bold text-sm mt-2">
+          حفظ الجدول
         </button>
       </form>
     </div>
@@ -232,35 +257,27 @@
             </select>
           </label>
 
-          <label class="block">
-            <span class="block text-xs font-bold text-ink-700 mb-1">أهداف النهائي (الفريق 1)</span>
-            <input type="number" name="p2_final_home" min="0"
-              value="{{ results.get('p2_final_home', '') }}"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold outline-none" />
-          </label>
-          <label class="block">
-            <span class="block text-xs font-bold text-ink-700 mb-1">أهداف النهائي (الفريق 2)</span>
-            <input type="number" name="p2_final_away" min="0"
-              value="{{ results.get('p2_final_away', '') }}"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold outline-none" />
-          </label>
-          <label class="block">
-            <span class="block text-xs font-bold text-ink-700 mb-1">عدد مباريات الترجيح</span>
-            <input type="number" name="p2_penalties_count" min="0"
-              value="{{ results.get('p2_penalties_count', '') }}"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold outline-none" />
-          </label>
-          <label class="block">
-            <span class="block text-xs font-bold text-ink-700 mb-1">الهداف</span>
-            <select name="p2_golden_boot"
+          <label class="block col-span-2">
+            <span class="block text-xs font-bold text-ink-700 mb-1">الحصان الأسود</span>
+            <input type="text" name="p2_dark_horse" maxlength="60"
+              value="{{ results.get('p2_dark_horse', '') }}"
+              placeholder="اسم المنتخب"
               class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              {% for p in players %}
-              <option value="{{ p }}" {{ 'selected' if results.get('p2_golden_boot') == p }}>{{ p }}</option>
-              {% endfor %}
-            </select>
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
+
+          <div class="col-span-2">
+            <div class="text-xs font-bold text-ink-700 mb-2">نتيجة النهائي الدقيقة</div>
+            <div class="flex items-center gap-2">
+              <input type="number" name="p2_final_home" min="0"
+                value="{{ results.get('p2_final_home', '') }}" placeholder="0"
+                class="flex-1 h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold text-center outline-none" />
+              <span class="text-ink-400 font-bold">—</span>
+              <input type="number" name="p2_final_away" min="0"
+                value="{{ results.get('p2_final_away', '') }}" placeholder="0"
+                class="flex-1 h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold text-center outline-none" />
+            </div>
+          </div>
         </div>
 
         <button type="submit"
@@ -280,47 +297,76 @@
             class="bg-white rounded-2xl ring-1 ring-black/5 p-4 space-y-4">
         <input type="hidden" name="action" value="save_p3" />
 
-        <div class="grid grid-cols-2 gap-3">
-          <label class="block col-span-2">
-            <span class="block text-xs font-bold text-ink-700 mb-1">النهائي انتهى بركلات الترجيح؟</span>
-            <select name="p3_final_to_penalties"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              <option value="1" {{ 'selected' if results.get('p3_final_to_penalties') == 1 }}>نعم</option>
-              <option value="0" {{ 'selected' if results.get('p3_final_to_penalties') == 0 }}>لا</option>
-            </select>
-          </label>
-
-          <label class="block col-span-2">
-            <span class="block text-xs font-bold text-ink-700 mb-1">أول هداف في النهائي</span>
-            <select name="p3_first_scorer"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              {% for p in players %}
-              <option value="{{ p }}" {{ 'selected' if results.get('p3_first_scorer') == p }}>{{ p }}</option>
+        <div class="space-y-3">
+          <!-- Penalties: two plain buttons -->
+          <div>
+            <div class="text-xs font-bold text-ink-700 mb-2">النهائي انتهى بركلات الترجيح؟</div>
+            <div class="grid grid-cols-2 gap-2">
+              {% set ftp = results.get('p3_final_to_penalties') %}
+              {% for val, lbl in [('1','نعم'), ('0','لا')] %}
+              <label class="cursor-pointer">
+                <input type="radio" name="p3_final_to_penalties" value="{{ val }}"
+                  {{ 'checked' if ftp == val|int }}
+                  class="sr-only peer" />
+                <div class="h-10 rounded-xl border-2 border-sand-300 font-bold text-sm text-center
+                            leading-[2.35rem] peer-checked:bg-pitch-700 peer-checked:text-white
+                            peer-checked:border-pitch-700">
+                  {{ lbl }}
+                </div>
+              </label>
               {% endfor %}
-            </select>
+            </div>
+          </div>
+
+          <!-- First scorer: text -->
+          <label class="block">
+            <span class="block text-xs font-bold text-ink-700 mb-1">أول هداف في النهائي</span>
+            <input type="text" name="p3_first_scorer" maxlength="60"
+              value="{{ results.get('p3_first_scorer', '') }}"
+              placeholder="اسم اللاعب"
+              class="w-full h-10 bg-sand-100 rounded-xl px-3 text-sm font-bold
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
 
-          <label class="block col-span-2">
-            <span class="block text-xs font-bold text-ink-700 mb-1">نصف النهائي ذو الأهداف الأكثر</span>
-            <select name="p3_more_goals_semi"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold
-                     custom-select appearance-none outline-none">
-              <option value="">—</option>
-              <option value="semi1" {{ 'selected' if results.get('p3_more_goals_semi') == 'semi1' }}>نصف النهائي 1</option>
-              <option value="semi2" {{ 'selected' if results.get('p3_more_goals_semi') == 'semi2' }}>نصف النهائي 2</option>
-            </select>
+          <!-- Total goals in final -->
+          <label class="block">
+            <span class="block text-xs font-bold text-ink-700 mb-1">مجموع أهداف النهائي</span>
+            <input type="number" name="p3_final_goals" min="0"
+              value="{{ results.get('p3_final_goals', '') }}"
+              placeholder="0"
+              class="w-full h-10 bg-sand-100 rounded-xl px-3 text-sm font-bold outline-none" />
           </label>
 
-          <label class="block col-span-2">
-            <span class="block text-xs font-bold text-ink-700 mb-1">إجمالي البطاقات الحمراء المتبقية</span>
-            <input type="number" name="p3_red_cards_remaining" min="0"
-              value="{{ results.get('p3_red_cards_remaining', '') }}"
-              class="w-full h-10 bg-sand-100 rounded-xl px-2 text-sm font-bold outline-none" />
+          <!-- Red card in final -->
+          <div>
+            <div class="text-xs font-bold text-ink-700 mb-2">بطاقة حمراء في النهائي؟</div>
+            <div class="grid grid-cols-2 gap-2">
+              {% set rcf = results.get('p3_red_card_final') %}
+              {% for val, lbl in [('1','نعم'), ('0','لا')] %}
+              <label class="cursor-pointer">
+                <input type="radio" name="p3_red_card_final" value="{{ val }}"
+                  {{ 'checked' if rcf == val|int }}
+                  class="sr-only peer" />
+                <div class="h-10 rounded-xl border-2 border-sand-300 font-bold text-sm text-center
+                            leading-[2.35rem] peer-checked:bg-pitch-700 peer-checked:text-white
+                            peer-checked:border-pitch-700">
+                  {{ lbl }}
+                </div>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Man of the match -->
+          <label class="block">
+            <span class="block text-xs font-bold text-ink-700 mb-1">أفضل لاعب في النهائي (مان أوف ذا ماتش)</span>
+            <input type="text" name="p3_mom_final" maxlength="60"
+              value="{{ results.get('p3_mom_final', '') }}"
+              placeholder="اسم اللاعب"
+              class="w-full h-10 bg-sand-100 rounded-xl px-3 text-sm font-bold
+                     outline-none focus:ring-2 focus:ring-pitch-500" />
           </label>
+
         </div>
 
         <button type="submit"
