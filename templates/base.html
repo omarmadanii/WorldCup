@@ -123,16 +123,12 @@ tailwind.config = {
 
       <!-- Predict -->
       <li>
-        {% set predict_url = url_for('predict_phase1') %}
-        {% if all_phases %}
-          {% for ph in all_phases %}
-            {% if ph.status == 'open' %}
-              {% if ph.id == 1 %}{% set predict_url = url_for('predict_phase1') %}
-              {% elif ph.id == 2 %}{% set predict_url = url_for('predict_phase2') %}
-              {% elif ph.id == 3 %}{% set predict_url = url_for('predict_phase3') %}
-              {% endif %}
-            {% endif %}
-          {% endfor %}
+        {% if current_phase and current_phase['id'] == 2 %}
+          {% set predict_url = url_for('predict_phase2') %}
+        {% elif current_phase and current_phase['id'] == 3 %}
+          {% set predict_url = url_for('predict_phase3') %}
+        {% else %}
+          {% set predict_url = url_for('predict_phase1') %}
         {% endif %}
         <a href="{{ predict_url }}"
            class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold
