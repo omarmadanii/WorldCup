@@ -106,7 +106,7 @@ tailwind.config = {
   {% if current_user %}
   <nav class="fixed bottom-0 inset-x-0 z-40 max-w-[420px] mx-auto
               bg-white/95 backdrop-blur border-t border-black/5">
-    <ul class="grid grid-cols-4 h-16">
+    <ul class="grid grid-cols-5 h-16">
 
       <!-- Home -->
       <li>
@@ -172,6 +172,18 @@ tailwind.config = {
           القواعد
         </a>
       </li>
+      <!-- Logout -->
+      <li>
+        <a href="{{ url_for('logout') }}"
+           class="flex flex-col items-center justify-center gap-0.5 h-full text-[10px] font-bold text-ink-400">
+          <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none"
+               stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M16 17l5-5-5-5M21 12H9M13 7V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h6a2 2 0 002-2v-2"/>
+          </svg>
+          خروج
+        </a>
+      </li>
+
     </ul>
   </nav>
   {% endif %}
