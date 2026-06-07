@@ -1,135 +1,137 @@
 # GAME_RULES.md — World Cup 2026 Prediction Game
 
 > **This file is the single source of truth for all game logic.**
-> Edit values here, not in code. When this file changes, the app's scoring,
-> phases, badges, and forms must be updated to match. All numbers below are
-> **PLACEHOLDERS** — change freely.
+> When this file changes, the app's scoring, phases, and forms must be updated to match.
 
 ---
 
 ## Overview
 
-A private World Cup 2026 prediction game for a group of friends. Players make
+A private World Cup 2026 prediction game for a small group of friends. Players make
 predictions across three phases; points are awarded as real results come in;
-a live leaderboard tracks standings. No money, no betting. Social hype happens
-on WhatsApp; the website only handles gameplay.
+a live leaderboard tracks standings. No money, no betting.
+
+Points **accumulate** across all three phases — your total is the sum of Phases 1, 2, and 3.
 
 ---
 
 ## Phases
 
-There are three phases. Each player makes **one submission per phase**, editable
-until that phase locks.
+Each player makes **one submission per phase**, editable until that phase locks,
+frozen after. No player can see another player's picks until the phase closes.
 
 ### Phase 1 — Group Stage Predictions
 - **Opens:** before the first World Cup match.
-- **Locks:** automatically when the first match kicks off.
+- **Locks:** when the first match kicks off.
 - **Players predict:**
-  - Group winners and runners-up (per group)
+  - Group qualifiers: pick the top-2 finishers from each of the 12 groups (A–L)
   - Total tournament goals
-  - Top scorer (Golden Boot)
-  - Best player (Golden Ball)
-  - Surprise team / dark horse
-  - One free-text wildcard prediction (admin scores manually)
+  - Tournament champion — early pick before the tournament starts
+  - Top scorer / Golden Boot — 3 ranked choices
+  - Best player / Golden Ball — 3 ranked choices
+  - الرابحة — one free-text prediction of a surprising event (admin scores manually)
+  - اختبار الدهاء — 5 fun questions, 1 pt each
 
-### Phase 2 — Knockout Predictions
-- **Opens:** immediately after the group stage ends.
+### Phase 2 — Knockout Bracket
+- **Opens:** after the group stage ends and the admin enters the 16 R32 fixtures.
 - **Locks:** before the first knockout match starts.
-- **Players predict:**
-  - Full knockout bracket
-  - Round of 32 winners
-  - Quarterfinalists
-  - Semifinalists
-  - Finalists
-  - Champion
-  - Final scoreline
-  - Penalty shootout count (how many knockout ties go to penalties)
-  - Golden Boot winner
+- **Players predict via an interactive bracket:**
+  - Pick the winner of each Round of 32 match (16 matches)
+  - Winners cascade into Round of 16, Quarterfinals, Semifinals, and Final
+  - Dark horse — a team that reaches the Quarterfinals despite low expectations
+  - Exact final score
 
 ### Phase 3 — Chaos Round
-- **Opens:** near the semifinals/final (admin triggers manually).
+- **Opens:** after the semi-finals end (admin triggers manually).
 - **Locks:** short window, admin-set deadline.
-- **Only 3–5 quick predictions**, e.g.:
-  - Will the final go to penalties?
-  - Who scores first in the final?
-  - Which semifinal has more goals?
-  - Exact final score
-  - Total red cards remaining in tournament
-- **Rule:** adds drama, must NOT outweigh Phases 1–2.
+- **5 questions about the final match:**
+  1. Will the final go to a penalty shootout? (yes/no)
+  2. Who scores the first goal in the final? (open text)
+  3. How many goals will be scored in the final? (number)
+  4. Will there be a red card in the final? (yes/no)
+  5. Who wins the Man of the Match award in the final? (open text)
 
 ---
 
-## Scoring (PLACEHOLDER VALUES — edit freely)
+## Scoring
+
+### Phase 1 — Group Stage
 
 | Prediction | Points |
 |---|---|
-| Correct group winner | +2 |
-| Correct group runner-up | +2 |
-| Total tournament goals (exact / within range) | +10 / +5 |
-| Top scorer (Golden Boot) | +10 |
-| Best player (Golden Ball) | +10 |
-| Surprise team / dark horse | +8 |
-| Wildcard | variable bonus, admin-assigned |
-| Round of 32 winner (each) | +3 |
-| Quarterfinalist (each) | +5 |
-| Semifinalist (each) | +8 |
-| Finalist (each) | +10 |
-| Champion | +20 |
-| Exact final score | +25 |
-| Penalty shootout count correct | +8 |
-| Chaos Round item (each) | +5 |
+| Predicted team qualifies from their group (either position) | +1 |
+| Position also correct (1st or 2nd) | +1 bonus |
+| **Max per group** | **4 pts** (2 picks × up to 2 pts each) |
+| Total tournament goals — exact | +10 |
+| Total tournament goals — within ±5 | +5 |
+| Tournament champion (early Phase 1 pick) | +15 |
+| Golden Boot — 1st choice correct | +10 |
+| Golden Boot — 2nd choice correct | +7 |
+| Golden Boot — 3rd choice correct | +5 |
+| Golden Ball — 1st choice correct | +10 |
+| Golden Ball — 2nd choice correct | +7 |
+| Golden Ball — 3rd choice correct | +5 |
+| الرابحة (free text event) | variable, admin-assigned |
+| اختبار الدهاء (5 questions) | +1 each (max 5) |
 
-### Optional scoring (off by default — enable if wanted)
-- **Knockout streak bonus:** +X for N consecutive correct knockout picks.
-- **Perfect-group bonus:** flat bonus if a player gets an entire group right.
+> For Golden Boot / Golden Ball, only the **first matching choice** awards points — no stacking.
 
-> Keep scoring simple. Do not invent additional conditions beyond this table.
+### Phase 2 — Knockout Bracket
 
----
-
-## Badges
-
-Displayed beside usernames. Auto-awarded where possible; admin can assign manually.
-
-| Badge | Earned by |
+| Prediction | Points |
 |---|---|
-| **Oracle** | Perfect group-stage prediction |
-| **Clutch** | Correct champion pick |
-| **Chaos Agent** | Successful wildcard prediction |
-| **Underdog Prophet** | Correctly predicted a surprise semifinalist |
+| Correct R32 winner (each of 16 matches) | +3 |
+| Correct Quarterfinalist (each of 8) | +5 |
+| Correct Semifinalist (each of 4) | +8 |
+| Correct Finalist (each of 2) | +10 |
+| Correct Champion | +20 |
+| Dark horse (reaches QF — admin confirms) | +8 |
+| Exact final score | +10 |
+
+### Phase 3 — Chaos Round
+
+| Prediction | Points |
+|---|---|
+| Each correct answer (5 questions) | +2 |
+| **Max Phase 3 total** | **10 pts** |
+
+> Phase 3 is intentionally small — it adds drama without overturning the Phase 1–2 standings.
 
 ---
 
 ## Core gameplay rules
 
-- **Hidden predictions:** players CANNOT see each other's picks until a phase
-  locks. This is mandatory — without it, people copy.
-- **One submission per phase**, editable until lock, frozen after.
+- **Hidden predictions:** players cannot see each other's picks until a phase locks.
+- **Points accumulate** across all three phases — there is no per-phase reset.
 - **Leaderboard goes live** once Phase 1 locks, then updates whenever the admin
   enters results and triggers recalculation.
-- **Scoring is recalculated**, never incrementally patched — recompute every
-  player's total from stored predictions + stored results so edits stay correct.
+- **Scoring is always recalculated fresh** from stored predictions + stored results.
+  Points are never patched in-place.
+- **Bracket is fully fixed** from the Round of 32 onwards — no re-draws between rounds.
+  The admin enters the 16 R32 fixtures once; the bracket path is determined automatically.
 
 ---
 
-## Admin capabilities
+## Admin responsibilities
 
-- Create player accounts; reset passwords manually.
-- Open / close each phase.
-- Enter real match results.
-- Trigger score recalculation.
-- Assign badges manually.
-- Trigger / open the Chaos Round.
+- Create player accounts; reset passwords.
+- Enter the **16 R32 fixtures** (team pairings) before opening Phase 2.
+- Open and close each phase manually.
+- Enter real match results for each round.
+- Trigger score recalculation after entering results.
+- Assign الرابحة points (any amount) and اختبار الدهاء points (0–5) per player.
+- Confirm the dark horse result for Phase 2 scoring.
 
-No automation beyond this. No live data feeds — admin enters results by hand.
+No live data feeds — admin enters all results by hand.
 
 ---
 
-## Player-facing screens (logic, not design)
+## Player-facing screens
 
-- **Login:** username + password only. No email, no verification.
-- **Dashboard:** current phase, deadlines, submission status, leaderboard
-  snapshot, earned badges, recent updates.
-- **Prediction forms:** mobile-first, one per phase, editable before deadline.
-- **Leaderboard:** total points, rank, rank movement, highlight current player,
-  badge icons, recent gains.
+- **Login:** username + password only.
+- **Dashboard:** current phase status, countdown, submission progress, leaderboard snapshot.
+- **Phase 1 form:** group picks (A–L), total goals, champion, golden boot/ball (3 choices each), الرابحة, اختبار الدهاء.
+- **Phase 2 form:** interactive bracket → R32 → R16 → QF → SF → Final; dark horse; exact final score.
+- **Phase 3 form:** 5 final-match questions.
+- **Leaderboard:** total points, rank, current-player highlight.
+- **Rules page:** scoring breakdown for all three phases (in-app).
