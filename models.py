@@ -114,6 +114,16 @@ CREATE TABLE IF NOT EXISTS activity (
     category   TEXT DEFAULT 'info',  -- info | result | rank
     created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- Manual admin bonus/penalty adjustments (ledger — one row per adjustment).
+-- points may be negative. Summed into each player's total.
+CREATE TABLE IF NOT EXISTS bonuses (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id),
+    points     INTEGER NOT NULL,
+    note       TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+);
 """
 
 
@@ -525,6 +535,54 @@ def get_recent_activity(limit=8):
         return db.execute(
             'SELECT * FROM activity ORDER BY created_at DESC LIMIT ?', (limit,)
         ).fetchall()
+
+
+# ── Bonuses / penalties (manual admin adjustments) ─────────────────────────
+
+def add_bonus(user_id, points, note=None):
+    """Post one adjustment. points may be negative for a penalty."""
+    with get_db() as db:
+        db.execute(
+            'INSERT INTO bonuses (user_id, points, note) VALUES (?, ?, ?)',
+            (int(user_id), int(points), (note or '').strip() or None)
+        )
+        db.commit()
+
+
+def delete_bonus(bonus_id):
+    with get_db() as db:
+        db.execute('DELETE FROM bonuses WHERE id = ?', (int(bonus_id),))
+        db.commit()
+
+
+def list_bonuses(user_id):
+    """All adjustments for one user, newest first."""
+    with get_db() as db:
+        return db.execute(
+            'SELECT * FROM bonuses WHERE user_id = ? ORDER BY created_at DESC, id DESC',
+            (user_id,)
+        ).fetchall()
+
+
+def get_all_bonuses():
+    """Return {user_id: [adjustment rows]} for every user with adjustments."""
+    with get_db() as db:
+        rows = db.execute(
+            'SELECT * FROM bonuses ORDER BY created_at DESC, id DESC'
+        ).fetchall()
+    out = {}
+    for row in rows:
+        out.setdefault(row['user_id'], []).append(row)
+    return out
+
+
+def bonus_total(user_id):
+    with get_db() as db:
+        row = db.execute(
+            'SELECT COALESCE(SUM(points), 0) AS t FROM bonuses WHERE user_id = ?',
+            (user_id,)
+        ).fetchone()
+    return row['t'] if row else 0
 
 
 # ── Phase 1 completion helper ──────────────────────────────────────────────

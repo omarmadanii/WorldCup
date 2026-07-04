@@ -199,8 +199,9 @@ def get_standings():
     Returns a list of dicts sorted by total (desc), including rank and
     rank-movement vs. the prev_rank stored in the users table.
     """
-    results = models.get_all_results()
-    users   = models.list_users(include_admin=False)
+    results  = models.get_all_results()
+    users    = models.list_users(include_admin=False)
+    bonuses  = models.get_all_bonuses()
 
     rows = []
     for user in users:
@@ -208,13 +209,17 @@ def get_standings():
         p1  = compute_phase1_score(uid, results)
         p2  = compute_phase2_score(uid, results)
         p3  = compute_phase3_score(uid, results)
+        adjustments = bonuses.get(uid, [])
+        bonus = sum(b['points'] for b in adjustments)
         rows.append({
-            'user':      dict(user),
-            'phase1':    p1,
-            'phase2':    p2,
-            'phase3':    p3,
-            'total':     p1 + p2 + p3,
-            'prev_rank': user['prev_rank'] or 0,
+            'user':        dict(user),
+            'phase1':      p1,
+            'phase2':      p2,
+            'phase3':      p3,
+            'bonus':       bonus,
+            'adjustments': [dict(b) for b in adjustments],
+            'total':       p1 + p2 + p3 + bonus,
+            'prev_rank':   user['prev_rank'] or 0,
         })
 
     rows.sort(key=lambda r: r['total'], reverse=True)

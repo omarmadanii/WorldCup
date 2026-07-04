@@ -451,6 +451,55 @@ def admin_players():
     )
 
 
+# ── Admin: bonuses / penalties ─────────────────────────────────────────────
+
+@app.route('/admin/bonuses', methods=['GET', 'POST'])
+@admin_required
+def admin_bonuses():
+    if request.method == 'POST':
+        action = request.form.get('action')
+
+        if action == 'add_bonus':
+            user_id = int(request.form.get('user_id', 0))
+            note    = request.form.get('note', '').strip()
+            try:
+                pts = int(request.form.get('points', ''))
+            except (ValueError, TypeError):
+                pts = 0
+            if not user_id or pts == 0:
+                flash('يرجى اختيار اللاعب وإدخال عدد نقاط غير صفري.', 'error')
+            else:
+                models.add_bonus(user_id, pts, note)
+                scoring.snapshot_and_refresh()
+                sign = '+' if pts > 0 else ''
+                flash(f'تمت إضافة {sign}{pts} نقطة.', 'success')
+
+        elif action == 'delete_bonus':
+            bonus_id = int(request.form.get('bonus_id', 0))
+            if bonus_id:
+                models.delete_bonus(bonus_id)
+                scoring.snapshot_and_refresh()
+                flash('تم حذف التعديل.', 'success')
+
+        return redirect(url_for('admin_bonuses'))
+
+    users = models.list_users(include_admin=False)
+    player_data = []
+    for u in users:
+        adjustments = models.list_bonuses(u['id'])
+        player_data.append({
+            'user':        dict(u),
+            'adjustments': adjustments,
+            'bonus_total': sum(b['points'] for b in adjustments),
+        })
+
+    return render_template(
+        'admin/bonuses.html',
+        active_tab='admin',
+        player_data=player_data,
+    )
+
+
 # ── Admin: results ─────────────────────────────────────────────────────────
 
 @app.route('/admin/results', methods=['GET', 'POST'])

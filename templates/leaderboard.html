@@ -114,7 +114,7 @@
             {{ row.user.username[:2] | upper }}
           </div>
 
-          <!-- Name + recent gain -->
+          <!-- Name + bonus/penalty note -->
           <div class="leading-tight min-w-0">
             <div class="font-bold truncate flex items-center gap-1">
               {{ row.user.username }}
@@ -122,10 +122,17 @@
               <span class="text-[9px] bg-warm-500 text-white px-1.5 py-px rounded font-bold shrink-0">أنت</span>
               {% endif %}
             </div>
-            <div class="text-[11px] font-bold
-                        {{ 'text-warm-700' if is_me else 'text-pitch-700' }}">
-              +{{ row.total }}
+            {% if row.adjustments %}
+            <div class="mt-0.5 flex flex-wrap gap-1">
+              {% for b in row.adjustments %}
+              <span class="text-[10px] font-bold rounded px-1.5 py-px
+                           {{ 'bg-pitch-700/10 text-pitch-700' if b.points > 0
+                              else 'bg-warm-500/10 text-warm-700' }}">
+                {{ '+' if b.points > 0 }}{{ b.points }}{% if b.note %} {{ b.note }}{% endif %}
+              </span>
+              {% endfor %}
             </div>
+            {% endif %}
           </div>
 
           <!-- Total points -->

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block title %}النقاط الإضافية{% endblock %}
+
+{% block content %}
+<section class="flex flex-col min-h-screen pb-24">
+
+  <!-- Header -->
+  <header class="bg-pitch-900 text-sand-50 px-5 pt-14 pb-6 stadium-glow relative overflow-hidden">
+    <div class="absolute inset-x-0 bottom-0 h-16 pitch-stripes opacity-60"></div>
+    <div class="relative">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-[10px] tracking-[0.25em] text-pitch-300 uppercase">الإدارة</div>
+          <h2 class="font-black text-2xl leading-tight mt-1">نقاط إضافية</h2>
+        </div>
+        <div class="flex gap-2">
+          <a href="{{ url_for('admin_players') }}"
+             class="text-[11px] font-bold bg-white/10 ring-1 ring-white/15
+                    text-sand-100 px-3 py-1.5 rounded-full">اللاعبون</a>
+          <a href="{{ url_for('admin_results') }}"
+             class="text-[11px] font-bold bg-white/10 ring-1 ring-white/15
+                    text-sand-100 px-3 py-1.5 rounded-full">النتائج →</a>
+        </div>
+      </div>
+      <p class="text-sand-200/70 text-xs mt-3 bg-ink-900/40 ring-1 ring-white/10 rounded-xl px-3 py-2">
+        أضف نقاطًا إضافية (+) أو خصمًا (−) لأي لاعب مع ملاحظة اختيارية.
+        تُضاف مباشرة إلى مجموع نقاطه في الترتيب.
+      </p>
+    </div>
+  </header>
+
+  <div class="px-5 mt-6 space-y-3">
+
+    {% if not player_data %}
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-6 text-center text-ink-400 text-sm font-bold">
+      لا يوجد لاعبون بعد.
+    </div>
+    {% else %}
+    {% for pd in player_data %}
+    <div class="bg-white rounded-2xl ring-1 ring-black/5 p-4">
+
+      <!-- Player row -->
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-full bg-pitch-600 text-white
+                    grid place-items-center font-black text-sm shrink-0">
+          {{ pd.user.username[:2] | upper }}
+        </div>
+        <div class="flex-1 leading-tight">
+          <div class="font-extrabold">{{ pd.user.username }}</div>
+          <div class="text-xs text-ink-500">{{ pd.adjustments|length }} تعديل</div>
+        </div>
+        <!-- Running total -->
+        <div class="font-display text-2xl tabular leading-none
+                    {{ 'text-pitch-700' if pd.bonus_total > 0 else
+                       ('text-warm-600' if pd.bonus_total < 0 else 'text-ink-400') }}">
+          {{ '+' if pd.bonus_total > 0 }}{{ pd.bonus_total }}
+        </div>
+      </div>
+
+      <!-- Existing adjustments -->
+      {% if pd.adjustments %}
+      <div class="mb-3 rounded-xl overflow-hidden ring-1 ring-black/8 divide-y divide-sand-200">
+        {% for b in pd.adjustments %}
+        <div class="px-3 py-2 flex items-center gap-2">
+          <span class="font-display text-lg tabular shrink-0 w-10
+                       {{ 'text-pitch-700' if b.points > 0 else 'text-warm-600' }}">
+            {{ '+' if b.points > 0 }}{{ b.points }}
+          </span>
+          <span class="text-xs text-ink-700 flex-1 truncate">
+            {{ b.note or '—' }}
+          </span>
+          <form method="POST" action="{{ url_for('admin_bonuses') }}">
+            <input type="hidden" name="action" value="delete_bonus" />
+            <input type="hidden" name="bonus_id" value="{{ b.id }}" />
+            <button type="submit"
+              class="text-[11px] font-bold text-warm-700 bg-warm-500/10 rounded-lg px-2 py-1">
+              حذف
+            </button>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Add adjustment -->
+      <form method="POST" action="{{ url_for('admin_bonuses') }}" class="space-y-2">
+        <input type="hidden" name="action" value="add_bonus" />
+        <input type="hidden" name="user_id" value="{{ pd.user.id }}" />
+        <div class="flex gap-2">
+          <input type="number" name="points" step="1" placeholder="±نقاط"
+            class="w-24 h-11 bg-sand-100 rounded-xl px-3 font-bold text-sm text-center
+                   outline-none focus:ring-2 focus:ring-pitch-500" />
+          <input type="text" name="note" placeholder="ملاحظة (اختياري)"
+            class="flex-1 h-11 bg-sand-100 rounded-xl px-3 font-bold text-sm
+                   outline-none focus:ring-2 focus:ring-pitch-500" />
+        </div>
+        <button type="submit"
+          class="w-full h-11 rounded-xl bg-pitch-700 text-white font-bold text-sm">
+          + إضافة تعديل
+        </button>
+      </form>
+
+    </div>
+    {% endfor %}
+    {% endif %}
+
+  </div>
+</section>
+{% endblock %}

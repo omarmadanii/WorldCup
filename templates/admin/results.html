@@ -13,11 +13,18 @@
           <div class="text-[10px] tracking-[0.25em] text-pitch-300 uppercase">الإدارة</div>
           <h2 class="font-black text-2xl leading-tight mt-1">النتائج والمراحل</h2>
         </div>
-        <a href="{{ url_for('admin_players') }}"
-           class="text-[11px] font-bold bg-white/10 ring-1 ring-white/15
-                  text-sand-100 px-3 py-1.5 rounded-full">
-          اللاعبون →
-        </a>
+        <div class="flex gap-2">
+          <a href="{{ url_for('admin_bonuses') }}"
+             class="text-[11px] font-bold bg-white/10 ring-1 ring-white/15
+                    text-sand-100 px-3 py-1.5 rounded-full">
+            نقاط إضافية
+          </a>
+          <a href="{{ url_for('admin_players') }}"
+             class="text-[11px] font-bold bg-white/10 ring-1 ring-white/15
+                    text-sand-100 px-3 py-1.5 rounded-full">
+            اللاعبون →
+          </a>
+        </div>
       </div>
     </div>
   </header>
